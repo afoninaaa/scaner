@@ -195,15 +195,15 @@
         }
 
         .bg-green {
-            background-color: green;
+            background-color: #AEFFB1;
         }
 
         .bg-yellow {
-            background-color: yellow;
+            background-color: #FBFFAE;
         }
 
         .bg-red {
-            background-color: red;
+            background-color: #FFBCAE;
         }
     </style>
 </head>
@@ -304,11 +304,12 @@
                                                 <col style="width: 15%;">
                                                 <col style="width: 10%;">
                                                 <col style="width: 15%;">
+                                                <col style="width:3%">
                                             </colgroup>
                                             <tbody id="commandTable">
                                                 {% for idx, command in form_data_comments.items() %}
                                                 <tr id="command_row_{{ idx }}" class="command-row">
-                                                    <td>{{ idx }}
+                                                    <td class="first-column" >{{ idx }}
                                                         <input type="hidden" name="command_row" value="{{ idx }}">
                                                         <input type="hidden" id=deviceAddr1_{{idx}} name="deviceAddr1_{{idx}}" value="{{command.deviceAddr}}">
                                                         <input type="hidden" id=register1_{{idx}} name="register1_{{ idx }}" value="{{command.register}}">
@@ -326,25 +327,32 @@
                                                             <option value="yellow" {% if command.color =='yellow'%} selected {% endif %}>not full deb</option>
                                                             <option value="red" {% if command.color =='red'%} selected {% endif %}>DNT work</option>
                                                         </select>
+                                                        <input type="hidden" name="selected_color_{{ idx }}" value="{{ command.color }}">
                                                     </td>
                                                     <td><input type="number" name="delay_{{ idx }}" class="form-control" value="{{ command.delay }}"></td>
+                                                    <td><button type="button" class="btn btn-sm btn-danger" onclick="deleteRow('{{ idx }}')">X</button></td>
                                                 </tr>
+
                                                 {% endfor %}
                                             </tbody>
                                         </table>
-                                        <div class="d-flex align-items-center">
+
+
+
                                             <button type="submit" class="btn btn-primary ">Run</button>
+                                    </form>
                                             <form action="/clear_history" method="POST" class="me-2">
-                                                <button type="submit" class="btn btn-warning ml-2">Clear History</button>
+                                                <button type="submit" class="btn btn-warning mt-2">Clear History</button>
                                             </form>
                                             <!-- Save Data Button -->
                                             <form id="saveForm" action="/save_table_data" method="POST">
                                                 <input type="hidden" id="tableData" name="tableData">
-                                                <button type="button" class="btn btn-primary ml-2" onclick="saveTableData()">Save Table Data</button>
+                                                <button type="button" class="btn btn-primary mt-2" onclick="saveTableData()">Save Table Data</button>
                                             </form>
-                                        </div>
-                                    </form>
+
+
                                     <!-- Load Data Button -->
+
                                     <form id="loadForm" action="/load_table_data" method="POST">
                                         <input type="file" id="jsonFileInput" class="form-control-file mt-3 " accept=".json">
                                         <button type="button" class="btn btn-primary mt-2" onclick="loadTableData()">Load Table Data</button>
@@ -352,6 +360,7 @@
                                     <form id="RunFileForm" action="/run_file"  method="POST">
                                         <button type="submit" class="btn btn-primary mt-2">Run File</button>
                                     </form>
+
                                 </div>
                             </div>
                         </div>
@@ -420,7 +429,7 @@
     </div>
 
     <div class="footer">
-        <p> Comport: {{ comport_number }} | Status: {{ 'Connected' if connected else 'Disconnected' }} | Baudrate: {{session.get('form_data', {}).get('baudrate') }} | Parity: {{session.get('form_data', {}).get('parity') }} | Stopbit: {{ session.get('form_data', {}).get('stopbit') }}</p>
+        <p> Comport: {{ comport_number }} | Status: {{ connected }} | Baudrate: {{session.get('form_data', {}).get('baudrate') }} | Parity: {{session.get('form_data', {}).get('parity') }} | Stopbit: {{ session.get('form_data', {}).get('stopbit') }}</p>
     </div>
 
     <script>
@@ -434,7 +443,7 @@
         rowData.comment1 = row.querySelector('input[name^="comment1_"]').value;
         rowData.comment2 = row.querySelector('input[name^="comment2_"]').value;
         rowData.delay = row.querySelector('input[name^="delay_"]').value;
-        rowData.color = row.querySelector('select[name^="color_"]').value;
+        rowData.color = row.querySelector('input[name^="selected_color_"]').value;
         rowData.deviceAddr = row.querySelector('input[name^="deviceAddr1_"]').value;
         rowData.value = row.querySelector('input[name^="value1_"]').value;
         rowData.register = row.querySelector('input[name^="register1_"]').value;
@@ -482,16 +491,65 @@
 
         }
 
-        function updateCommand(idx, field, value) {
-            var tr = document.querySelector('#command-row-' + idx); // Corrected selector
-            var selectedColor = value;
-
-            // Remove all classes to overwrite
-            tr.className = 'command-row';
-
-            // Add class for color
-            tr.classList.add('bg-' + selectedColor);
+        function deleteRow(idx) {
+        // Подтверждение удаления
+        if (!confirm('Are you sure you want to delete this row?')) {
+            return;
         }
+
+        // Отправка запроса на сервер
+        fetch('/delete_row', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ idx: idx }),
+        }).then(response => {
+            if (response.ok) {
+                // Удаление строки из DOM
+                document.getElementById('command_row_' + idx).remove();
+            } else {
+                alert('Failed to delete row');
+            }
+        }).catch(error => {
+            console.error('Error deleting row:', error);
+        });
+    }
+function setColorForRows() {
+        var rows = document.querySelectorAll('.command-row');
+
+        rows.forEach(function(row) {
+            var colorInput = row.querySelector('input[name^="selected_color_"]');
+            var selectedColor = colorInput.value;
+
+            row.querySelector('.first-column').classList.remove('bg-white', 'bg-green', 'bg-yellow', 'bg-red');
+            switch (selectedColor) {
+                case 'green':
+                    row.querySelector('.first-column').classList.add('bg-green');
+                    break;
+                case 'yellow':
+                    row.querySelector('.first-column').classList.add('bg-yellow');
+                    break;
+                case 'red':
+                    row.querySelector('.first-column').classList.add('bg-red');
+                    break;
+                default:
+                    row.querySelector('.first-column').classList.add('bg-white');
+                    break;
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        setColorForRows();
+
+        var colorInputs = document.querySelectorAll('input[name^="selected_color_"]');
+        colorInputs.forEach(function(input) {
+            input.addEventListener('change', function() {
+                setColorForRows();
+            });
+        });
+    });
     </script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>

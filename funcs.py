@@ -33,20 +33,18 @@ def toggle_connection():
     form_data = session.get('form_data', {})
     comport_number = request.form.get('comportSelect')
     session['comport_number'] = comport_number
-    print(f"Comport selected: {comport_number}")
     if comport_number:
         try:
             if connected:
-                print("Disconnecting...")
                 client.close()
                 connected = False
             else:
-                print("Connecting...")
                 client = ModbusClient(method='rtu', port=comport_number, baudrate=form_data['baudrate'],
                                       timeout=form_data['timeout'], parity=form_data['parity'],
                                       stopbits=form_data['stopbit'], bytesize=8)
                 client.connect()
                 connected = True
+            session['connected'] = connected
         except Exception as e:
             session['log'] = f"Failed to connect: {str(e)}"
     else:
@@ -110,13 +108,13 @@ def send_command():
         deviceaddr = saved_command_idx.get('device_addr')
         register = saved_command_idx.get('register')
         commandno = saved_command_idx.get('command')
-        comment1, comment2, delay = request_table(index)
+        comment1, comment2, delay, color = request_table(index)
         form_data_comments[index] = {
-                "comment1": comment1,
-                "comment2": comment2,
-                "delay": delay,
-                'command': prepared_command,
-                "value": value, "deviceAddr": deviceaddr, "register": register, "commandNo": commandno
+                "comment1": comment1, "comment2": comment2,
+                "delay": delay, 'command': prepared_command,
+                "value": value, "deviceAddr": deviceaddr,
+                "register": register, "commandNo": commandno,
+                "color": color
         }
     session['form_data_comments'] = form_data_comments
 
@@ -140,6 +138,24 @@ def send_command():
     else:
         session['log'] = "Invalid command selected"
     return redirect(url_for('index'))
+
+@app.route('/delete_row', methods=['POST'])
+def delete_row():
+    try:
+        data = request.json
+        idx = data.get('idx')
+
+        # Удаление строки по индексу из form_data_comments
+        if idx in session['form_data_comments']:
+            del session['form_data_comments'][idx]
+
+        # Обновление сессии (опционально, в зависимости от вашей логики)
+        session.modified = True
+
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        print(f"Failed to delete row: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 400
 
 def save_table_data():
     table_data_json = request.form.get('tableData')
@@ -192,11 +208,7 @@ def clear_history():
         session.pop('form_data_comments')
     if 'selected_command_idx' in session:
         session.pop('selected_command_idx')
-
-    print("Cleared prepared_commands:", prepared_commands)
-    print("Session after clearing form_data_comments:", session.get('form_data_comments'))
-
-    session['log'] = ''
+    session['log'] = f""
     return redirect(url_for('index'))
 
 def load_table_data():

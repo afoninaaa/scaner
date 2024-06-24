@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 import json
 import os
 import serial.tools.list_ports
-from funcs import config, toggle_connection, prepare_command, send_command, save_table_data, run_file, load_table_data, clear_history
+from funcs import (config, toggle_connection, prepare_command, send_command, save_table_data,
+                   run_file, load_table_data, clear_history, delete_row)
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -28,6 +29,7 @@ def index():
     form_data_com = session.get('form_data_com', {})
     form_data_comments = session.get('form_data_comments', {})
     selected_command_idx = session.get('selected_command_idx')
+    connected = session.get('connected')
     return render_template('index.html', comports=comports, client=client, connected=connected,
                            log=session.get('log', ''), form_data=form_data, saved_commands=saved_commands,
                            prepared_commands=prepared_commands, form_data_com=form_data_com,
@@ -51,6 +53,12 @@ def handle_prepare_command():
 @app.route('/send_command', methods=['POST','GET'])
 def handle_send_command():
     return send_command()
+
+
+@app.route('/delete_row', methods=['POST'])
+def handle_delete_row():
+    return delete_row()
+
 
 @app.route('/save_table_data', methods=['POST'])
 def handle_save_table_data():

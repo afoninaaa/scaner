@@ -1,14 +1,14 @@
 [
     {
-        "comment1": "0",
-        "comment2": "0",
+        "comment1": "",
+        "comment2": "",
         "delay": "0",
-        "color": "white",
+        "color": "green",
         "deviceAddr": "1",
         "value": "1",
         "register": "1",
-        "commandNo": "05",
-        "command": "01 05 01 01 D1 89",
+        "commandNo": "01",
+        "command": "01 01 01 01 90 48",
         "command_row": "0"
     }
 ]

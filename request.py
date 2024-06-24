@@ -20,5 +20,6 @@ def request_table(index):
     comment1 = request.form.get(f'comment1_{index}')
     comment2 = request.form.get(f'comment2_{index}')
     delay = request.form.get(f'delay_{index}')
-    return comment1, comment2, delay
+    color = request.form.get(f'color_{index}')
+    return comment1, comment2, delay, color
 
