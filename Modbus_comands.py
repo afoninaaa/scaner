@@ -11,7 +11,6 @@ def read_coils(device_addr, register, value, client):
     count = int(value)
     result = client.read_coils(address, count, slave)
     response = result.bits
-    print(response)
     return response
 
 def read_discrete_inputs(device_addr, register, value, client):
@@ -39,12 +38,10 @@ def read_input_registers(device_addr, register, value, client):
     return response
 
 def write_coil(device_addr, register, value, client):
-    print("ну вызвалась же че за хуйня")
     address = int(register)
     slave = int(device_addr)
     value = int(value)
     response = client.write_coil(address, value, slave)
-    print(response)
     return response
 
 def  write_register(device_addr, register, value, client):
