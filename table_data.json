@@ -2,13 +2,61 @@
     {
         "comment1": "",
         "comment2": "",
-        "delay": "0",
-        "color": "green",
+        "delay": "1",
+        "color": "white",
         "deviceAddr": "1",
         "value": "1",
         "register": "1",
-        "commandNo": "01",
-        "command": "01 01 01 01 90 48",
+        "commandNo": "05",
+        "command": "01 05 01 01 D1 89",
         "command_row": "0"
+    },
+    {
+        "comment1": "",
+        "comment2": "",
+        "delay": "1",
+        "color": "white",
+        "deviceAddr": "1",
+        "value": "8",
+        "register": "1",
+        "commandNo": "01",
+        "command": "01 01 01 08 50 4E",
+        "command_row": "1"
+    },
+    {
+        "comment1": "",
+        "comment2": "",
+        "delay": "1",
+        "color": "white",
+        "deviceAddr": "1",
+        "value": "1",
+        "register": "4",
+        "commandNo": "06",
+        "command": "01 06 04 01 22 D9",
+        "command_row": "2"
+    },
+    {
+        "comment1": "",
+        "comment2": "",
+        "delay": "1",
+        "color": "white",
+        "deviceAddr": "1",
+        "value": "1",
+        "register": "4",
+        "commandNo": "03",
+        "command": "01 03 04 01 32 D8",
+        "command_row": "3"
+    },
+    {
+        "comment1": "",
+        "comment2": "",
+        "delay": "1",
+        "color": "white",
+        "deviceAddr": "1",
+        "value": "221",
+        "register": "5",
+        "commandNo": "06",
+        "command": "01 06 05 DD 22 D0",
+        "command_row": "4"
     }
 ]

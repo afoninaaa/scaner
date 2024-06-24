@@ -31,7 +31,7 @@ def config():
 def toggle_connection():
     global connected, client
     form_data = session.get('form_data', {})
-    comport_number = request.form.get('comportSelect')
+    comport_number = request_com()
     session['comport_number'] = comport_number
     if comport_number:
         try:
