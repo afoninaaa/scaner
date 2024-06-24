@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModBus Control Panel</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+    zoom: 0.8
+}
+        .btn-connect {
+            background-color: green;
+            color: white
+        }
+
+        .btn-disconnect {
+            background-color: red;
+            color: white;
+        }
+
+        .custom-background {
+            background-color: #e6f7ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-tabs .nav-item .nav-link {
+            color: #333;
+            background-color: #fff;
+            border: none;
+            border-radius: 0
+        }
+
+        .nav-tabs .nav-item .nav-link.active {
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-bottom-color: transparent;
+            border-radius: 0;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .tab-content {
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            overflow-y: auto
+        }
+
+        .btn-connect,
+        .btn-disconnect {
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .form-inline .btn-primary {
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .log-header {
+            border-bottom: 1px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 1px;
+        }
+
+        .main-content {
+            display: flex;
+            justify-content: space-between;
+            max-height: 650px;
+            overflow-y: auto;
+        }
+
+        .left-side {
+            flex: 0 0 70%;
+            max-width: 70%;
+        }
+
+        .right-side {
+            flex: 0 0 28%;
+            max-width: 28%;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            margin-top: -10px;
+            padding: 10px;
+            background-color: black;
+            color: white;
+        }
+
+        .right-side-content {
+            white-space: pre-wrap;
+            background-color: black;
+            color: white;
+            padding: 0px;
+            margin-top: -10px;
+            border-radius: 10px;
+        }
+         .hidden {
+        display: none;
+    }
+
+        .footer {
+            background-color: #007bff;
+            color: #fff;
+            padding: 5px;
+            border-radius: 0 0 10px 10px;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 30px;
+            font-size: 10px;
+        }
+
+        .form-inline .form-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .form-group {
+            width: 190px;
+            margin-right: 1px;
+            margin-left: -45px;
+            justify-content: center;
+        }
+
+        .form-groupp {
+            width: 190px;
+            margin-right: 70px;
+            margin-left: 10px;
+            justify-content: center;
+        }
+
+        .conf {
+            width: 190px;
+            margin-right: 10px;
+            margin-left: 10px;
+            justify-content: center;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .container {}
+
+        .scrollable {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .button-container form {
+        display: inline;
+        margin-left: 50px; /
+    }
+
+
+        .table {
+            width: 100%;
+            margin-bottom: 10px;
+            border: 1px solid #dddddd;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .table th {
+            font-weight: bold;
+            background: #efefef;
+            border: 1px solid #dddddd;
+            align-items: center;
+        }
+
+        .table td {
+            border: 1px solid #dddddd;
+            padding: 2px;
+            font-size: 18px;
+            align-items: center;
+            bottom: 5;
+        }
+
+        .bg-white {
+            background-color: white;
+        }
+
+        .bg-green {
+            background-color: green;
+        }
+
+        .bg-yellow {
+            background-color: yellow;
+        }
+
+        .bg-red {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3 p-0">
+        <div class="custom-background">
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <div class="form-inline">
+                        <h3>Comport:</h3>
+                        <form action="/toggle_connection" method="post" class="form-inline">
+                            <select class="form-control ml-4" name="comportSelect" id="comportSelect">
+                                {% for port in comports %}
+                                    <option value="{{ port }}">{{ port }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn ml-4 {% if connected %} btn-disconnect {% else %} btn-connect {% endif %}">
+                                {{ 'Disconnect' if connected else 'Connect' }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-6 text-right">
+                    <div class="form-inline justify-content-between">
+                        <button type="button" class="btn btn-secondary ml-2" data-toggle="modal" data-target="#configModal">
+                            <span class="glyphicon glyphicon-cog"></span> Open Config
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="left-side">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab1-tab" data-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">Modbus</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab2-tab" data-toggle="tab" href="#tab2" role="tab" aria-controls="tab2" aria-selected="false">Tab 2</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab3-tab" data-toggle="tab" href="#tab3" role="tab" aria-controls="tab3" aria-selected="false">Tab 3</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+                        <form action="/prepare_command" method="POST" class="form-inline">
+                             <div class="form-group">
+                                <label for="mode" class="sr-only">Mode</label>
+                                <select class="form-control mb-2 col-xs-2 col-sm-5 " id="mode" name="mode" required>
+                                    <option value="hex">hex</option>
+                                    <option value="dec">dec</option>
+                                    <option value="ascii">ascii</option>
+                                    <option value="bin">bin</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="deviceAddr" class="sr-only">Device Addr</label>
+                                <input type="text" class="form-control mb-2 col-xs-2 col-sm-9 " id="deviceAddr" name="deviceAddr" placeholder="Device Address" value="{{ form_data_com.deviceAddr }}" required >
+                            </div>
+                            <div class="form-group">
+                                <label for="commandNo" class="sr-only">Command No</label>
+                                <select class="form-control mb-2 col-xs-2 col-sm-9 " id="commandNo" name="commandNo" required>
+                                    <option value="01" {% if form_data_com.commandNo=='01'%} selected {% endif %} >01 read coils</option>
+                                    <option value="02" {% if form_data_com.commandNo=='02'%} selected {% endif %}>02 read discrete inputs</option>
+                                    <option value="03" {% if form_data_com.commandNo =='03'%} selected {% endif %}>03 read holding registers</option>
+                                    <option value="04" {% if form_data_com.commandNo =='04'%} selected {% endif %}>04 read input registers</option>
+                                    <option value="05" {% if form_data_com.commandNo =='05'%} selected {% endif %}>05 write single coils</option>
+                                    <option value="06" {% if form_data_com.commandNo =='06'%} selected {% endif %}>06 write single registers</option>
+                                    <option value="15" {% if form_data_com.commandNo =='15'%} selected {% endif %}>15 write multiple coils</option>
+                                    <option value="16" {% if form_data_com.commandNo =='16'%} selected {% endif %}>16 write multiple register</option>
+
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="register" class="sr-only">Register</label>
+                                <input type="text" class="form-control mb-2 col-xs-2 col-sm-6 " id="register" name="register" placeholder="Register" value="{{ form_data_com.register }}"required>
+                            </div>
+                            <div class="form-group">
+                                <label for="value" class="sr-only">Value</label>
+                                <input type="text" class="form-control mb-2 col-xs-2 col-sm-4 " id="value" name="value" placeholder="Value" value="{{ form_data_com.value }}"required>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary mb-2">Prepare</button>
+                            </div>
+                        </form>
+                        <div class="container">
+                            <button class="btn btn-info mb-2" type="button" data-toggle="collapse" data-target="#savedCommandsTable" aria-expanded="false" aria-controls="savedCommandsTable">
+                                Show history
+                            </button>
+                                <div id="savedCommandsTable" class="collapse">
+                                    <form method="POST" action="/send_command" class="form-section">
+                                        <table class="table command-table">
+                                            <colgroup>
+                                                <col style="width: 3%;">
+                                                <col style="width: 15%;">
+                                                <col style="width: 15%;">
+                                                <col style="width: 15%;">
+                                                <col style="width: 10%;">
+                                                <col style="width: 15%;">
+                                            </colgroup>
+                                            <tbody id="commandTable">
+                                                {% for idx, command in form_data_comments.items() %}
+                                                <tr id="command_row_{{ idx }}" class="command-row">
+                                                    <td>{{ idx }}
+                                                        <input type="hidden" name="command_row" value="{{ idx }}">
+                                                        <input type="hidden" id=deviceAddr1_{{idx}} name="deviceAddr1_{{idx}}" value="{{command.deviceAddr}}">
+                                                        <input type="hidden" id=register1_{{idx}} name="register1_{{ idx }}" value="{{command.register}}">
+                                                        <input type="hidden" id=commandNo1_{{idx}} name="commandNo1_{{ idx }}" value="{{command.commandNo}}">
+                                                        <input type="hidden" id=value1_{{idx}} name="value1_{{ idx }}" value="{{command.value}}">
+                                                        <input type="hidden" id=command1_{{idx}} name="command1_{{ idx }}" value="{{command.command}}">
+                                                    </td>
+                                                    <td><input type="text" name="comment1_{{ idx }}" class="form-control" value="{{command.comment1}}"> </td>
+                                                    <td>{{ command.command }}</td>
+                                                    <td><input type="text" name="comment2_{{ idx }}" class="form-control" value="{{ command.comment2}}"></td>
+                                                    <td>
+                                                        <select class="color-select" name="color_{{ idx }}">
+                                                            <option value="white" {% if command.color =='white'%} selected {% endif %}>not deb</option>
+                                                            <option value="green" {% if command.color =='green'%} selected {% endif %}>deb</option>
+                                                            <option value="yellow" {% if command.color =='yellow'%} selected {% endif %}>not full deb</option>
+                                                            <option value="red" {% if command.color =='red'%} selected {% endif %}>DNT work</option>
+                                                        </select>
+                                                    </td>
+                                                    <td><input type="number" name="delay_{{ idx }}" class="form-control" value="{{ command.delay }}"></td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        <div class="d-flex align-items-center">
+                                            <button type="submit" class="btn btn-primary ">Run</button>
+                                            <form action="/clear_history" method="POST" class="me-2">
+                                                <button type="submit" class="btn btn-warning ml-2">Clear History</button>
+                                            </form>
+                                            <!-- Save Data Button -->
+                                            <form id="saveForm" action="/save_table_data" method="POST">
+                                                <input type="hidden" id="tableData" name="tableData">
+                                                <button type="button" class="btn btn-primary ml-2" onclick="saveTableData()">Save Table Data</button>
+                                            </form>
+                                        </div>
+                                    </form>
+                                    <!-- Load Data Button -->
+                                    <form id="loadForm" action="/load_table_data" method="POST">
+                                        <input type="file" id="jsonFileInput" class="form-control-file mt-3 " accept=".json">
+                                        <button type="button" class="btn btn-primary mt-2" onclick="loadTableData()">Load Table Data</button>
+                                    </form>
+                                    <form id="RunFileForm" action="/run_file"  method="POST">
+                                        <button type="submit" class="btn btn-primary mt-2">Run File</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
+                        Content for tab 2.
+                    </div>
+                    <div class="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="tab3-tab">
+                        Content for tab 3.
+                    </div>
+                </div>
+            </div>
+            <div class="right-side">
+                <div class="right-side-content">
+                     <h3>Log:</h3>
+                    <textarea class="form-control" rows="10" readonly>{{ log }}</textarea>
+                </div>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="configModal" tabindex="-1" role="dialog" aria-labelledby="configModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="configModalLabel">Configuration</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/config" method="POST">
+                            <div class="conf">
+                                <label for="baudrate">Baudrate:</label>
+                                <select class="form-control mb-2 col-xs-2 col-sm-9 " id="baudrate" name="baudrate" required>
+                                    <option value="9600" {% if form_data.baudrate=='9600' %}selected{% endif %}>9600</option>
+                                    <option value="19200" {% if form_data.baudrate=='19200' %}selected{% endif %}>19200</option>
+                                    <option value="38400" {% if form_data.baudrate=='38400' %}selected{% endif %}>38400</option>
+                                    <option value="57600" {% if form_data.baudrate=='57600' %}selected{% endif %}>57600</option>
+                                    <option value="115200" {% if form_data.baudrate=='115200'%} selected{% endif %}>115200</option>
+                                </select>
+                            </div>
+                            <div class="conf">
+                               <label for="parity">Parity:</label>
+                                <select class="form-control mb-2 col-xs-2 col-sm-9 " id="parity" name="parity" required>
+                                    <option value="0" {% if form_data.parity == '0' %}selected{% endif %}>None</option>
+                                    <option value="1" {% if form_data.parity == '1' %}selected{% endif %}>Odd</option>
+                                </select>
+                            </div>
+                            <div class="conf">
+                                 <label for="stopbit">Stopbit:</label>
+                                <select class="form-control mb-2 col-xs-2 col-sm-9 " id="stopbit" name="stopbit" required>
+                                   <option value="1" {% if form_data.stopbit == '1' %}selected{% endif %}>1</option>
+                                    <option value=1.5" {% if form_data.stopbit == '1.5' %}selected{% endif %}>1.5</option>
+                                    <option value="2" {% if form_data.stopbit == '2' %}selected{% endif %}>2</option>
+                                </select>
+                                <label for="timeout">Timeout:</label>
+                                <input type="text" class="form-control" id="timeout" name="timeout"  value="{{ form_data.timeout }}"required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Save Config</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p> Comport: {{ comport_number }} | Status: {{ 'Connected' if connected else 'Disconnected' }} | Baudrate: {{session.get('form_data', {}).get('baudrate') }} | Parity: {{session.get('form_data', {}).get('parity') }} | Stopbit: {{ session.get('form_data', {}).get('stopbit') }}</p>
+    </div>
+
+    <script>
+
+        function saveTableData() {
+    var tableData = [];
+    var rows = document.querySelectorAll('table tr');
+
+    rows.forEach(function(row) {
+        var rowData = {};
+        rowData.comment1 = row.querySelector('input[name^="comment1_"]').value;
+        rowData.comment2 = row.querySelector('input[name^="comment2_"]').value;
+        rowData.delay = row.querySelector('input[name^="delay_"]').value;
+        rowData.color = row.querySelector('select[name^="color_"]').value;
+        rowData.deviceAddr = row.querySelector('input[name^="deviceAddr1_"]').value;
+        rowData.value = row.querySelector('input[name^="value1_"]').value;
+        rowData.register = row.querySelector('input[name^="register1_"]').value;
+        rowData.commandNo = row.querySelector('input[name^="commandNo1_"]').value;
+        rowData.command = row.querySelector('input[name^="command1_"]').value;
+        rowData.command_row = row.querySelector('input[name^="command_row"]').value;
+
+        tableData.push(rowData);
+    });
+
+    document.getElementById('tableData').value = JSON.stringify(tableData);
+    document.getElementById('saveForm').submit();
+}
+
+
+        function loadTableData() {
+
+            var input = document.getElementById('jsonFileInput');
+            var file = input.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var data = JSON.parse(e.target.result);
+                    fetch('/load_table_data', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            tableData: data
+                        })
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            } else {
+                                alert('Failed to load data');
+                            }
+                        });
+                };
+                reader.readAsText(file);
+            } else {
+                alert('Please select a file first.');
+            }
+
+        }
+
+        function updateCommand(idx, field, value) {
+            var tr = document.querySelector('#command-row-' + idx); // Corrected selector
+            var selectedColor = value;
+
+            // Remove all classes to overwrite
+            tr.className = 'command-row';
+
+            // Add class for color
+            tr.classList.add('bg-' + selectedColor);
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
