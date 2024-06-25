@@ -1,6 +1,7 @@
 
 def send_modbus_command(device_addr, command, register, value, client):
     command = int(command)
+    print(command)
     response = MODBUS_COMMANDS[command-1](device_addr, register, value, client)
     return response
 
@@ -18,7 +19,7 @@ def read_discrete_inputs(device_addr, register, value, client):
     slave = int(device_addr)
     count = int(value)
     result = client.read_discrete_inputs(address, count, slave)
-    response = result.registers
+    response = result.bits
     return response
 
 def read_holding_register(device_addr, register, value, client):

@@ -20,7 +20,6 @@ saved_data_file = 'saved_data.json'
 
 def config():
     timeout, parity, stopbit, baudrate = request_config()
-
     parity_map = {'None': serial.PARITY_NONE, 'Odd': serial.PARITY_ODD}
     parity = parity_map.get(parity, serial.PARITY_NONE)
     stopbit_map = {1: serial.STOPBITS_ONE, 1.5: serial.STOPBITS_ONE_POINT_FIVE, 2: serial.STOPBITS_TWO}
@@ -116,6 +115,7 @@ def send_command():
         deviceaddr = saved_command_idx.get('device_addr')
         register = saved_command_idx.get('register')
         commandno = saved_command_idx.get('command')
+        #print(deviceaddr,value,register,commandno)
         comment1, comment2, delay, color = request_table(index)
         form_data_comments[index] = {
                 "comment1": comment1, "comment2": comment2,
@@ -132,6 +132,7 @@ def send_command():
             for idx in saved_commands:
                 delay = request.form.get(f'delay_{idx}')
                 prepared_command = saved_commands[idx]
+                print(prepared_command)
                 device_addr = prepared_command['device_addr']
                 command = prepared_command['command']
                 register = prepared_command['register']
@@ -198,7 +199,7 @@ def run_file():
             command_info = command_data['command']
 
             response = send_modbus_command(device_addr, command, register, value, client)
-            session['log'] += f">>\n {command_info}\n<< Response: {response}\n"
+            session['log'] += f">> {command_info}\n<< Response: {response}\n"
 
             time.sleep(delay)
     except Exception as e:

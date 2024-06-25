@@ -4,12 +4,13 @@ import os
 import serial.tools.list_ports
 from funcs import (config, toggle_connection, prepare_command, send_command, save_table_data,
                    run_file, load_table_data, clear_history, delete_row)
-
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 # Get available COM ports
 comports = [port.device for port in serial.tools.list_ports.comports()]
+
+
 connected = False
 command_history = []
 prepared_commands = {}
