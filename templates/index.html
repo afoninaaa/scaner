@@ -205,6 +205,20 @@
         .bg-red {
             background-color: #FFBCAE;
         }
+        .v23_15 {
+  width: 553px;
+  height: 51px;
+  background: url("../images/v23_15.png");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  margin: 53px;
+  opacity: 1;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  overflow: hidden;
+}
     </style>
 </head>
 <body>
@@ -336,32 +350,34 @@
                                                 {% endfor %}
                                             </tbody>
                                         </table>
-
-
-
                                             <button type="submit" class="btn btn-primary ">Run</button>
                                     </form>
+                                    <div class="d-flex mt-2">
                                             <form action="/clear_history" method="POST" class="me-2">
                                                 <button type="submit" class="btn btn-warning mt-2">Clear History</button>
                                             </form>
                                             <!-- Save Data Button -->
                                             <form id="saveForm" action="/save_table_data" method="POST">
                                                 <input type="hidden" id="tableData" name="tableData">
-                                                <button type="button" class="btn btn-primary mt-2" onclick="saveTableData()">Save Table Data</button>
+                                                <button type="button" class="btn btn-primary mt-2 ml-2" onclick="saveTableData()">Save Table Data</button>
                                             </form>
+                                        </div>
 
                                 </div>
                             </div>
                         </div>
                     <!-- Load Data Button -->
+                    <div class="d-flex mt-2">
 
-                    <form id="loadForm" action="/load_table_data" method="POST">
-                    <input type="file" id="jsonFileInput" class="form-control-file mt-3 " accept=".json">
-                        <button type="button" class="btn btn-primary mt-2" onclick="loadTableData()">Load Table Data</button>
+                    <form id="loadForm" action="/load_table_data" method="POST" class="d-flex align-items-center">
+                        <input type="file" id="jsonFileInput" class="form-control-file mе-3 " accept=".json">
+                        <button type="button" class="btn btn-primary mt-2" style="height: 38px;" onclick="loadTableData()">Load Table Data</button>
                     </form>
+
                     <form id="RunFileForm" action="/run_file"  method="POST">
-                        <button type="submit" class="btn btn-primary mt-2">Run File</button>
+                        <button type="submit" class="btn btn-primary mt-2 ml-2">Run File</button>
                     </form>
+                    </div>
 
                     <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
                         Content for tab 2.
