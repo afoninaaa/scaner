@@ -63,7 +63,15 @@ def prepare_command():
                 int(register),
                 int(value),
             ]
-            crc = calculate_crc(message)
+            data = [
+                int(device_addr, 16),
+                int(command_no, 16),
+                int(register, 16) >> 8,
+                int(register, 16) & 0xFF,
+                int(value, 16) >> 8,
+                int(value, 16) & 0xFF
+            ]
+            crc = calculate_crc(data)
             message.extend([crc & 0xFF, crc >> 8])
             formatted_command = format_command_as_string(message)
             command_index = len(prepared_commands)
