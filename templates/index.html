@@ -14,13 +14,11 @@
         .btn-connect {
             background-color: green;
             color: white;
-             zoom: 0.8
         }
 
         .btn-disconnect {
             background-color: red;
             color: white;
-             zoom: 0.8
         }
 
         .custom-background {
@@ -28,7 +26,6 @@
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-             zoom: 0.8
         }
 
         .nav-tabs .nav-item .nav-link {
@@ -36,7 +33,7 @@
             background-color: #fff;
             border: none;
             border-radius: 0;
-             zoom: 0.8
+
         }
 
         .nav-tabs .nav-item .nav-link.active {
@@ -59,7 +56,7 @@
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             margin-top: 20px;
             overflow-y: auto;
-            zoom: 0.8
+
         }
 
         .btn-connect,
@@ -231,7 +228,7 @@
                         <form action="/toggle_connection" method="post" class="form-inline">
                             <select class="form-control ml-4" name="comportSelect" id="comportSelect">
                                 {% for port in comports %}
-                                    <option value="{{ port }}">{{ port }}</option>
+                                     <option value="{{ port }}" {%if port == comport_number %} selected {% endif %}> {{ port }}</option>
                                 {% endfor %}
                             </select>
                             <button type="submit" class="btn ml-4 {% if connected %} btn-disconnect {% else %} btn-connect {% endif %}">
@@ -366,19 +363,22 @@
                                 </div>
                             </div>
                         </div>
-                    <!-- Load Data Button -->
+                    <!-- Load Data Button
                     <div class="d-flex mt-2">
-
+                    <button id="loadAndRunFileBtn" class="btn btn-primary">Prepare device</button>
                     <form id="loadForm" action="/load_table_data" method="POST" class="d-flex align-items-center">
-                        <input type="file" id="jsonFileInput" class="form-control-file mе-3 " accept=".json">
+                        <input type="file" id="jsonFileInput" class="form-control-file mе-3 ml-2 " accept=".json">
                         <button type="button" class="btn btn-primary mt-2" style="height: 38px;" onclick="loadTableData()">Load Table Data</button>
+                    </form>  -->
+                    <div class="d-flex mt-2">
+                        <button id="loadAndRunFileBtn" class="btn btn-primary mt-2">Prepare device</button>
+                    <form id="RunFileForm" action="/run_file"  method="POST" class="d-flex align-items-center">
+                        <button type="submit" class="btn btn-primary mt-2 ml-2">RUN</button>
+                        <input type="text" name="count" class="form-control ml-2 mt-2 col-xs-2 col-sm-6" value="Выполнить {{count}} раз">
+                        <button id="stopExecutionBtn" class="btn btn-danger ml-2">Stop</button>
                     </form>
-
-                    <form id="RunFileForm" action="/run_file"  method="POST">
-                        <button type="submit" class="btn btn-primary mt-2 ml-2">Run File</button>
-                    </form>
+                    <button id="stopFileBtn" class="btn btn-danger"> Emergency Stop</button>
                     </div>
-
                     <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
                         Content for tab 2.
                     </div>
@@ -408,12 +408,12 @@
                         <form action="/config" method="POST">
                             <div class="conf">
                                 <label for="baudrate">Baudrate:</label>
-                                <select class="form-control mb-2 col-xs-2 col-sm-9 " id="baudrate" name="baudrate" required>
+                                <select class="form-control mb-2 col-xs-2 col-sm-9 " id="baudrate" name="baudrate"  required>
+                                    <option value="115200" {% if form_data.baudrate=='115200'%} selected{% endif %}>115200</option>
                                     <option value="9600" {% if form_data.baudrate=='9600' %}selected{% endif %}>9600</option>
                                     <option value="19200" {% if form_data.baudrate=='19200' %}selected{% endif %}>19200</option>
                                     <option value="38400" {% if form_data.baudrate=='38400' %}selected{% endif %}>38400</option>
                                     <option value="57600" {% if form_data.baudrate=='57600' %}selected{% endif %}>57600</option>
-                                    <option value="115200" {% if form_data.baudrate=='115200'%} selected{% endif %}>115200</option>
                                 </select>
                             </div>
                             <div class="conf">
@@ -505,6 +505,24 @@
 
         }
 
+
+        document.getElementById("stopFileBtn").addEventListener("click", function() {
+            fetch('/stop_file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(data.message);
+                } else {
+                    console.error("Failed to send stop file command");
+                }
+            });
+        });
+
+
         function deleteRow(idx) {
         // Подтверждение удаления
         if (!confirm('Are you sure you want to delete this row?')) {
@@ -564,6 +582,39 @@ function setColorForRows() {
             });
         });
     });
+
+        document.getElementById("loadAndRunFileBtn").addEventListener("click", function() {
+        fetch('/load_and_run_from_file', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                console.log("Load and run command sent");
+            } else {
+                console.error("Failed to send load and run command");
+            }
+        });
+    });
+
+
+        document.getElementById("stopExecutionBtn").addEventListener("click", function() {
+            fetch('/stop_execution', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(data.message);
+                } else {
+                    console.error("Failed to send stop command");
+                }
+            });
+        });
+
     </script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>

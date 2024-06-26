@@ -1,7 +1,6 @@
 
 def send_modbus_command(device_addr, command, register, value, client):
     command = int(command)
-    print(command)
     response = MODBUS_COMMANDS[command-1](device_addr, register, value, client)
     return response
 

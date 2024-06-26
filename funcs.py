@@ -5,10 +5,16 @@ import time
 from pymodbus.client import ModbusSerialClient as ModbusClient
 from Modbus_comands import calculate_crc, send_modbus_command, format_command_as_string
 from request import request_config, request_com, request_command, request_table
+from collections import OrderedDict
+from threading import Event
+
+
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 # Get available COM ports
+stop_event = Event()
+emergency_stop_event = Event()
 comports = [port.device for port in serial.tools.list_ports.comports()]
 connected = False
 command_history = []
@@ -115,7 +121,6 @@ def send_command():
         deviceaddr = saved_command_idx.get('device_addr')
         register = saved_command_idx.get('register')
         commandno = saved_command_idx.get('command')
-        #print(deviceaddr,value,register,commandno)
         comment1, comment2, delay, color = request_table(index)
         form_data_comments[index] = {
                 "comment1": comment1, "comment2": comment2,
@@ -131,16 +136,22 @@ def send_command():
         try:
             for idx in saved_commands:
                 delay = request.form.get(f'delay_{idx}')
+                if delay == '':
+                    delay = 0
+                else:
+                    delay = int(delay)
                 prepared_command = saved_commands[idx]
-                print(prepared_command)
                 device_addr = prepared_command['device_addr']
                 command = prepared_command['command']
                 register = prepared_command['register']
                 value = prepared_command['value']
                 command_info = prepared_command['command_info']
+                time_start = time.time()
                 response = send_modbus_command(device_addr, command, register, value, client)
-                session['log'] += f">>\n {command_info}\n<< Response: {response}\n"
-                time.sleep(int(delay))
+                time_end = time.time()
+                time_stamp = time_end-time_start
+                session['log'] += f">>\n {command_info}\n<< Response: {response}\n << Time: {time_stamp}"
+                time.sleep(delay)
 
         except Exception as e:
             session['log'] = f"Failed to send command: {str(e)}"
@@ -148,7 +159,7 @@ def send_command():
         session['log'] = "Invalid command selected"
     return redirect(url_for('index'))
 
-@app.route('/delete_row', methods=['POST'])
+
 def delete_row():
     try:
         data = request.json
@@ -178,34 +189,124 @@ def save_table_data():
             return "Failed to decode JSON", 400
     return "No data provided", 400
 
+#
+#
+# def run_file():
+#     global client, stop_event
+#     stop_event.clear()  # Сбрасываем флаг остановки
+#     form_data_comments = session.get('form_data_comments', OrderedDict())
+#     if not form_data_comments:
+#         session['log'] = "No commands to run."
+#         return redirect(url_for('index'))
+#     count = request.form.get('count', '1')  # Получаем значение из формы, по умолчанию 1
+#     try:
+#         count = int(count)
+#     except ValueError:
+#         count = 1
+#     try:
+#         sorted_keys = sorted(form_data_comments.keys(), key=int)
+#         for i in range(count):
+#             for idx in sorted_keys:
+#                 if stop_event.is_set():
+#                     session['log'] += "\nExecution stopped by user.\n"
+#                     break
+#                 print(idx)
+#                 command_data = form_data_comments[idx]
+#                 try:
+#                     delay = int(command_data.get('delay', 0))
+#                 except ValueError:
+#                     session['log'] += f"Invalid delay value for command {idx}: {command_data.get('delay')}\n"
+#                     continue
+#                 device_addr = command_data['deviceAddr']
+#                 command = command_data['commandNo']
+#                 register = command_data['register']
+#                 value = command_data['value']
+#                 command_info = command_data['command']
+#
+#                 response = send_modbus_command(device_addr, command, register, value, client)
+#                 session['log'] += f">> {command_info}\n<< Response: {response}\n"
+#                 print(command_info)
+#                 time.sleep(delay)
+#
+#     except Exception as e:
+#         session['log'] = f"Failed to send command: {str(e)}"
+#
+#     return redirect(url_for('index'))
+
 def run_file():
-    global client
-    form_data_comments = session.get('form_data_comments', {})
-    if not form_data_comments:
-        session['log'] = "No commands to run."
-        return redirect(url_for('index'))
+    global client, stop_event
+    stop_event.clear()  # Сбрасываем флаг остановки
     try:
-        for idx, command_data in form_data_comments.items():
-            try:
-                delay = int(command_data.get('delay', 0))
-            except ValueError:
-                session['log'] += f"Invalid delay value for command {idx}: {command_data.get('delay')}\n"
-                continue
+        with open('table_data.json', 'r', encoding='utf-8') as f:
+            table_data = json.load(f)
+        if table_data:
+            form_data_comments = OrderedDict()
+            for idx, command_data in enumerate(table_data):
+                form_data_comments[idx] = {
+                    'comment1': command_data.get('comment1', ''),
+                    'comment2': command_data.get('comment2', ''),
+                    'delay': command_data.get('delay', 0),
+                    'color': command_data.get('color', ''),
+                    'deviceAddr': command_data.get('deviceAddr', ''),
+                    'register': command_data.get('register', ''),
+                    'commandNo': command_data.get('commandNo', ''),
+                    'command': command_data.get('command', ''),
+                    'value': command_data.get('value', '')
+                }
+            session['form_data_comments'] = form_data_comments
+        else:
+            session['log'] = 'No tableData provided'
+            return redirect(url_for('index'))
+        count = request.form.get('count', '1')  # Получаем значение из формы, по умолчанию 1
+        try:
+            count = int(count)
+        except ValueError:
+             count = 1
+        sorted_keys = sorted(form_data_comments.keys(), key=int)
+        for i in range(count):
+            if stop_event.is_set():
+                session['log'] += "\nExecution stopped by user after current iteration.\n"
+                break
+            print(i)
+            for idx in sorted_keys:
+                if emergency_stop_event.is_set():
+                    session['log'] += "\nEmergency stop activated. Execution stopped immediately.\n"
+                    return redirect(url_for('index'))
+                print(idx)
+                command_data = form_data_comments[idx]
+                try:
+                    delay = int(command_data.get('delay', 0))
+                except ValueError:
+                    session['log'] += f"Invalid delay value for command {idx}: {command_data.get('delay')}\n"
+                    continue
+                device_addr = command_data['deviceAddr']
+                command = command_data['commandNo']
+                register = command_data['register']
+                value = command_data['value']
+                command_info = command_data['command']
 
-            device_addr = command_data['deviceAddr']
-            command = command_data['commandNo']
-            register = command_data['register']
-            value = command_data['value']
-            command_info = command_data['command']
+                response = send_modbus_command(device_addr, command, register, value, client)
+                session['log'] += f">> {command_info}\n<< Response: {response}\n"
+                time.sleep(delay)
+                print(command_info)
 
-            response = send_modbus_command(device_addr, command, register, value, client)
-            session['log'] += f">> {command_info}\n<< Response: {response}\n"
+            if stop_event.is_set():
+                session['log'] += "\nExecution stopped by user after current iteration.\n"
+                break
 
-            time.sleep(delay)
+    except FileNotFoundError:
+        session['log'] = "File prepare_data.json not found."
+    except json.JSONDecodeError:
+        session['log'] = "Error decoding JSON from prepare_data.json."
     except Exception as e:
-        session['log'] = f"Failed to send command: {str(e)}"
-
+        session['log'] = f"Failed to load or execute commands: {str(e)}"
     return redirect(url_for('index'))
+
+def stop_execution():
+    global stop_event
+    stop_event.set()  # Устанавливаем флаг остановки
+    session['log'] += "\nRunning will stop after this iteration.\n"
+    return jsonify({'success': True})
 
 def clear_history():
     global prepared_commands, saved_commands
@@ -224,9 +325,9 @@ def load_table_data():
     try:
         table_data = request.json.get('tableData')
         if table_data:
-            session['form_data_comments'] = {}
+            form_data_comments = OrderedDict()
             for idx, command_data in enumerate(table_data):
-                session['form_data_comments'][str(idx)] = {
+                form_data_comments[idx] = {
                     'comment1': command_data['comment1'],
                     'comment2': command_data['comment2'],
                     'delay': command_data['delay'],
@@ -237,8 +338,70 @@ def load_table_data():
                     'command': command_data['command'],
                     'value': command_data['value']
                 }
+            session['form_data_comments'] = form_data_comments
             return jsonify({'success': True})
         else:
             return jsonify({'success': False, 'error': 'No tableData provided'})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+def stop_file():
+    global emergency_stop_event
+    emergency_stop_event.set()  # Устанавливаем флаг экстренной остановки
+    session['log'] += "\nEmergency stop command received.\n"
+    return jsonify({'success': True})
+
+
+def load_and_run_from_file():
+    global client, stop_event
+    stop_event.clear()  # Сбрасываем флаг остановки
+    try:
+        with open('prepare_data.json', 'r', encoding='utf-8') as f:
+            table_data = json.load(f)
+        if table_data:
+            form_data_comments = OrderedDict()
+            for idx, command_data in enumerate(table_data):
+                form_data_comments[idx] = {
+                    'comment1': command_data.get('comment1', ''),
+                    'comment2': command_data.get('comment2', ''),
+                    'delay': command_data.get('delay', 0),
+                    'color': command_data.get('color', ''),
+                    'deviceAddr': command_data.get('deviceAddr', ''),
+                    'register': command_data.get('register', ''),
+                    'commandNo': command_data.get('commandNo', ''),
+                    'command': command_data.get('command', ''),
+                    'value': command_data.get('value', '')
+                }
+            session['form_data_comments'] = form_data_comments
+        else:
+            session['log'] = 'No tableData provided'
+            return redirect(url_for('index'))
+        count = 1  # Устанавливаем количество повторений в 1 по умолчанию
+        sorted_keys = sorted(form_data_comments.keys(), key=int)
+        for i in range(count):
+            for idx in sorted_keys:
+                if stop_event.is_set():
+                    session['log'] += "\nExecution stopped by user.\n"
+                    break
+                command_data = form_data_comments[idx]
+                try:
+                    delay = int(command_data.get('delay', 0))
+                except ValueError:
+                    session['log'] += f"Invalid delay value for command {idx}: {command_data.get('delay')}\n"
+                    continue
+                device_addr = command_data['deviceAddr']
+                command = command_data['commandNo']
+                register = command_data['register']
+                value = command_data['value']
+                command_info = command_data['command']
+
+                response = send_modbus_command(device_addr, command, register, value, client)
+                session['log'] += f">> {command_info}\n<< Response: {response}\n"
+                time.sleep(delay)
+    except FileNotFoundError:
+        session['log'] = "File prepare_data.json not found."
+    except json.JSONDecodeError:
+        session['log'] = "Error decoding JSON from prepare_data.json."
+    except Exception as e:
+        session['log'] = f"Failed to load or execute commands: {str(e)}"
+    return redirect(url_for('index'))
