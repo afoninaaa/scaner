@@ -1,4 +1,4 @@
-from flask import Flask,  request, redirect, url_for, session, jsonify
+from flask import Flask,  request, redirect, url_for, session, jsonify, flash
 import json
 import serial.tools.list_ports
 import time
@@ -136,10 +136,7 @@ def send_command():
         try:
             for idx in saved_commands:
                 delay = request.form.get(f'delay_{idx}')
-                if delay == '':
-                    delay = 0
-                else:
-                    delay = int(delay)
+                delay = float(delay) if delay else 0
                 prepared_command = saved_commands[idx]
                 device_addr = prepared_command['device_addr']
                 command = prepared_command['command']
@@ -151,6 +148,7 @@ def send_command():
                 time_end = time.time()
                 time_stamp = time_end-time_start
                 session['log'] += f">>\n {command_info}\n<< Response: {response}\n << Time: {time_stamp}"
+                print(">> ", command_info,"\n<< Response: ",response, "\n << Time: ", time_stamp)
                 time.sleep(delay)
 
         except Exception as e:
@@ -233,11 +231,54 @@ def save_table_data():
 #
 #     return redirect(url_for('index'))
 
+
+def STOP():
+    with open('stop.json', 'r') as f:  # Removed 'encoding' argument
+        table_data = json.load(f)
+    if table_data:
+        form_data_comments = OrderedDict()
+        for idx, command_data in enumerate(table_data):
+            form_data_comments[idx] = {
+                    'comment1': command_data.get('comment1', ''),
+                    'comment2': command_data.get('comment2', ''),
+                    'delay': command_data.get('delay', 0),
+                    'color': command_data.get('color', ''),
+                    'deviceAddr': command_data.get('deviceAddr', ''),
+                    'register': command_data.get('register', ''),
+                    'commandNo': command_data.get('commandNo', ''),
+                    'command': command_data.get('command', ''),
+                    'value': command_data.get('value', '')
+                }
+        session['form_data_comments'] = form_data_comments
+    else:
+        session['log'] = 'No tableData provided'
+    sorted_keys = sorted(form_data_comments.keys(), key=int)
+    for idx in sorted_keys:
+        command_data = form_data_comments[idx]
+        try:
+            delay = command_data.get('delay', 0)
+            delay = float(delay) if delay else 0
+        except ValueError:
+                session['log'] += f"Invalid delay value for command {idx}: {command_data.get('delay')}\n"
+                continue
+        device_addr = command_data['deviceAddr']
+        command = command_data['commandNo']
+        register = command_data['register']
+        value = command_data['value']
+        command_info = command_data['command']
+        response = send_modbus_command(device_addr, command, register, value, client)
+        log_message = f">> {command_info}\n<< Response: {response}\n"
+        session['log'] += log_message
+        flash(log_message)  # Используем flash для мгновенного отображения
+        time.sleep(delay)
+
+
+    return redirect(url_for('index'))
 def run_file():
     global client, stop_event
     stop_event.clear()  # Сбрасываем флаг остановки
     try:
-        with open('table_data.json', 'r', encoding='utf-8') as f:
+        with open('table_data.json', 'r') as f:  # Removed 'encoding' argument
             table_data = json.load(f)
         if table_data:
             form_data_comments = OrderedDict()
@@ -264,9 +305,6 @@ def run_file():
              count = 1
         sorted_keys = sorted(form_data_comments.keys(), key=int)
         for i in range(count):
-            if stop_event.is_set():
-                session['log'] += "\nExecution stopped by user after current iteration.\n"
-                break
             print(i)
             for idx in sorted_keys:
                 if emergency_stop_event.is_set():
@@ -293,7 +331,6 @@ def run_file():
             if stop_event.is_set():
                 session['log'] += "\nExecution stopped by user after current iteration.\n"
                 break
-
     except FileNotFoundError:
         session['log'] = "File prepare_data.json not found."
     except json.JSONDecodeError:
@@ -301,6 +338,7 @@ def run_file():
     except Exception as e:
         session['log'] = f"Failed to load or execute commands: {str(e)}"
     return redirect(url_for('index'))
+
 
 def stop_execution():
     global stop_event
@@ -356,7 +394,7 @@ def load_and_run_from_file():
     global client, stop_event
     stop_event.clear()  # Сбрасываем флаг остановки
     try:
-        with open('prepare_data.json', 'r', encoding='utf-8') as f:
+        with open('prepare_data.json', 'r') as f:  # Removed 'encoding' argument
             table_data = json.load(f)
         if table_data:
             form_data_comments = OrderedDict()
@@ -398,6 +436,75 @@ def load_and_run_from_file():
                 response = send_modbus_command(device_addr, command, register, value, client)
                 session['log'] += f">> {command_info}\n<< Response: {response}\n"
                 time.sleep(delay)
+    except FileNotFoundError:
+        session['log'] = "File prepare_data.json not found."
+    except json.JSONDecodeError:
+        session['log'] = "Error decoding JSON from prepare_data.json."
+    except Exception as e:
+        session['log'] = f"Failed to load or execute commands: {str(e)}"
+    return redirect(url_for('index'))
+
+
+def open():
+    global client, stop_event
+    stop_event.clear()  # Сбрасываем флаг остановки
+    try:
+        with open('open.json', 'r', encoding='utf-8') as f:
+            table_data = json.load(f)
+        if table_data:
+            form_data_comments = OrderedDict()
+            for idx, command_data in enumerate(table_data):
+                form_data_comments[idx] = {
+                    'comment1': command_data.get('comment1', ''),
+                    'comment2': command_data.get('comment2', ''),
+                    'delay': command_data.get('delay', 0),
+                    'color': command_data.get('color', ''),
+                    'deviceAddr': command_data.get('deviceAddr', ''),
+                    'register': command_data.get('register', ''),
+                    'commandNo': command_data.get('commandNo', ''),
+                    'command': command_data.get('command', ''),
+                    'value': command_data.get('value', '')
+                }
+            session['form_data_comments'] = form_data_comments
+        else:
+            session['log'] = 'No tableData provided'
+            return redirect(url_for('index'))
+        count = request.form.get('count', '1')  # Получаем значение из формы, по умолчанию 1
+        try:
+            count = int(count)
+        except ValueError:
+            count = 1
+        sorted_keys = sorted(form_data_comments.keys(), key=int)
+        for i in range(count):
+            if stop_event.is_set():
+                session['log'] += "\nExecution stopped by user after current iteration.\n"
+                break
+            for idx in sorted_keys:
+                if emergency_stop_event.is_set():
+                    session['log'] += "\nEmergency stop activated. Execution stopped immediately.\n"
+                    STOP()
+                    return redirect(url_for('index'))
+                command_data = form_data_comments[idx]
+                try:
+                    delay = command_data.get('delay', 0)
+                    delay = float(delay) if delay else 0
+                except ValueError:
+                    session['log'] += f"Invalid delay value for command {idx}: {command_data.get('delay')}\n"
+                    continue
+                device_addr = command_data['deviceAddr']
+                command = command_data['commandNo']
+                register = command_data['register']
+                value = command_data['value']
+                command_info = command_data['command']
+                response = send_modbus_command(device_addr, command, register, value, client)
+                log_message = f">> {command_info}\n<< Response: {response}\n"
+                session['log'] += log_message
+                flash(log_message)  # Используем flash для мгновенного отображения
+                time.sleep(delay)
+
+                if stop_event.is_set():
+                    session['log'] += "\nExecution stopped by user after current iteration.\n"
+                    break
     except FileNotFoundError:
         session['log'] = "File prepare_data.json not found."
     except json.JSONDecodeError:

@@ -372,6 +372,7 @@
                     </form>  -->
                     <div class="d-flex mt-2">
                         <button id="loadAndRunFileBtn" class="btn btn-primary mt-2">Prepare device</button>
+                        <button id="open" class="btn btn-primary ml-2 mt-2">Open</button>
                     <form id="RunFileForm" action="/run_file"  method="POST" class="d-flex align-items-center">
                         <button type="submit" class="btn btn-primary mt-2 ml-2">RUN</button>
                         <input type="text" name="count" class="form-control ml-2 mt-2 col-xs-2 col-sm-6" value="Выполнить {{count}} раз">
@@ -598,6 +599,20 @@ function setColorForRows() {
         });
     });
 
+    document.getElementById("open").addEventListener("click", function() {
+        fetch('/open', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                console.log("Load and run command sent");
+            } else {
+                console.error("Failed to send load and run command");
+            }
+        });
+    });
 
         document.getElementById("stopExecutionBtn").addEventListener("click", function() {
             fetch('/stop_execution', {
@@ -614,6 +629,8 @@ function setColorForRows() {
                 }
             });
         });
+
+
 
     </script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
