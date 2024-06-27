@@ -3,7 +3,7 @@ import json
 import os
 import serial.tools.list_ports
 from funcs import (config, toggle_connection, prepare_command, send_command, save_table_data,
-                   run_file, load_table_data, clear_history, delete_row, stop_file, load_and_run_from_file, stop_execution, open)
+                   run_file, load_table_data, clear_history, delete_row, stop_file, load_and_run_from_file, stop_execution, open_dev)
 from collections import OrderedDict
 from threading import Event
 app = Flask(__name__)
@@ -21,8 +21,6 @@ form_data_comments = {}
 client = None
 
 saved_data_file = 'table_data.json'
-
-
 if not os.path.exists(saved_data_file):
     with open(saved_data_file, 'w') as f:
         json.dump({"form_data_comments": {}}, f)
@@ -70,7 +68,9 @@ def handle_save_table_data():
     return save_table_data()
 
 @app.route('/run_file', methods=['POST'])
+
 def handle_run_file():
+    print("IN")
     return run_file()
 @app.route('/stop_file', methods=['POST'])
 def handle_stop_file():

@@ -1,4 +1,4 @@
-from flask import Flask,  request, redirect, url_for, session, jsonify, flash
+from flask import Flask,  request, redirect, url_for, session, jsonify
 import json
 import serial.tools.list_ports
 import time
@@ -269,16 +269,14 @@ def STOP():
         response = send_modbus_command(device_addr, command, register, value, client)
         log_message = f">> {command_info}\n<< Response: {response}\n"
         session['log'] += log_message
-        flash(log_message)  # Используем flash для мгновенного отображения
         time.sleep(delay)
-
-
     return redirect(url_for('index'))
+
 def run_file():
     global client, stop_event
     stop_event.clear()  # Сбрасываем флаг остановки
     try:
-        with open('table_data.json', 'r') as f:  # Removed 'encoding' argument
+        with open('table_data.json', 'r', encoding='utf-8') as f:
             table_data = json.load(f)
         if table_data:
             form_data_comments = OrderedDict()
@@ -445,7 +443,7 @@ def load_and_run_from_file():
     return redirect(url_for('index'))
 
 
-def open():
+def open_dev():
     global client, stop_event
     stop_event.clear()  # Сбрасываем флаг остановки
     try:
@@ -499,7 +497,6 @@ def open():
                 response = send_modbus_command(device_addr, command, register, value, client)
                 log_message = f">> {command_info}\n<< Response: {response}\n"
                 session['log'] += log_message
-                flash(log_message)  # Используем flash для мгновенного отображения
                 time.sleep(delay)
 
                 if stop_event.is_set():
