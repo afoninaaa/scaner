@@ -15,12 +15,10 @@
             background-color: green;
             color: white;
         }
-
         .btn-disconnect {
             background-color: red;
             color: white;
         }
-
         .custom-background {
             background-color: #e6f7ff;
             padding: 20px;
@@ -308,6 +306,17 @@
                                 <div id="savedCommandsTable" class="collapse">
                                     <form method="POST" action="/send_command" class="form-section">
                                         <table class="table command-table">
+                                            <thead>
+                                                <tr>
+                                                  <th>Idx</th>
+                                                  <th>Comment 1</th>
+                                                  <th>Command</th>
+                                                  <th>Comment 2</th>
+                                                  <th>Status</th>
+                                                  <th>Delay</th>
+                                                  <th>Del</th>
+                                                </tr>
+                                              </thead>
                                             <colgroup>
                                                 <col style="width: 3%;">
                                                 <col style="width: 15%;">
@@ -317,6 +326,7 @@
                                                 <col style="width: 15%;">
                                                 <col style="width:3%">
                                             </colgroup>
+
                                             <tbody id="commandTable">
                                                 {% for idx, command in form_data_comments.items() %}
                                                 <tr id="command_row_{{ idx }}" class="command-row">
@@ -376,12 +386,15 @@
                     <form id="RunFileForm" action="/run_file"  method="POST" class="d-flex align-items-center">
                         <button type="submit" class="btn btn-primary mt-2 ml-2">RUN</button>
                         <input type="text" name="count" class="form-control ml-2 mt-2 col-xs-2 col-sm-6" value="Выполнить {{count}} раз">
-                        <button id="stopExecutionBtn" class="btn btn-danger ml-2">Stop</button>
                     </form>
-                    <button id="stopFileBtn" class="btn btn-danger"> Emergency Stop</button>
+                    <button id="stopExecutionBtn" class="btn btn-danger ml-2">Stop</button>
+                    <button id="stopFileBtn" class="btn btn-danger ml-2"> Emergency Stop</button>
                     </div>
                     <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
-                        Content for tab 2.
+                        <textarea id="pythonCode" rows="10" cols="50"># Write your Python code here</textarea><br>
+                        <button id="saveButton">Save to File</button>
+                        <button id="runButton">Run Code</button>
+                        <div id="output"></div>
                     </div>
                     <div class="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="tab3-tab">
                         Content for tab 3.
@@ -627,6 +640,32 @@ function setColorForRows() {
                 } else {
                     console.error("Failed to send stop command");
                 }
+            });
+        });
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("saveButton").addEventListener("click", function() {
+                const code = document.getElementById("pythonCode").value;
+                fetch('/save_code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ code: code }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                });
+            });
+
+            document.getElementById("runButton").addEventListener("click", function() {
+                fetch('/run_code', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("output").innerText = data.output;
+                });
             });
         });
 

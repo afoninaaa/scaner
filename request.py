@@ -16,6 +16,7 @@ def request_command():
     command_no = request.form.get('commandNo')
     register = request.form.get('register')
     value = request.form.get('value')
+
     return device_addr, command_no, register, value
     
 def request_table(index):

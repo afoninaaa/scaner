@@ -3,7 +3,7 @@ import json
 import os
 import serial.tools.list_ports
 from funcs import (config, toggle_connection, prepare_command, send_command, save_table_data,
-                   run_file, load_table_data, clear_history, delete_row, stop_file, load_and_run_from_file, stop_execution, open_dev)
+                   run_file, load_table_data, clear_history, delete_row, stop_file, load_and_run_from_file, stop_execution, open_dev, run_code, save_code)
 from collections import OrderedDict
 from threading import Event
 app = Flask(__name__)
@@ -43,8 +43,6 @@ def index():
 def handle_config():
     return config()
 
-
-
 @app.route('/toggle_connection', methods=['POST'])
 def handle_toggle_connection():
     return toggle_connection()
@@ -68,9 +66,7 @@ def handle_save_table_data():
     return save_table_data()
 
 @app.route('/run_file', methods=['POST'])
-
 def handle_run_file():
-    print("IN")
     return run_file()
 @app.route('/stop_file', methods=['POST'])
 def handle_stop_file():
@@ -93,7 +89,14 @@ def handle_stop_execution():
     return stop_execution()
 @app.route('/open', methods=['POST'])
 def handle_open():
-    return open()
+    return open_dev()
 
+@app.route('/save_code', methods=['POST'])
+def handle_save_code():
+    return save_code()
+
+@app.route('/run_code', methods=['POST'])
+def handle_run_code():
+    return run_code()
 if __name__ == '__main__':
     app.run(debug=True)

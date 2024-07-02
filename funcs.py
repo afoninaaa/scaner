@@ -3,11 +3,11 @@ import json
 import serial.tools.list_ports
 import time
 from pymodbus.client import ModbusSerialClient as ModbusClient
-from Modbus_comands import calculate_crc, send_modbus_command, format_command_as_string
+from Modbus_comands import calculate_crc,  format_command_as_string, send_modbus_command
 from request import request_config, request_com, request_command, request_table
 from collections import OrderedDict
 from threading import Event
-
+import subprocess
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -60,6 +60,7 @@ def toggle_connection():
 def prepare_command():
     global prepared_commands, saved_commands
     device_addr, command_no, register, value = request_command()
+
     session['form_data_com'] = {'deviceAddr': device_addr, 'commandNo': command_no, 'register': register, 'value': value}
     if device_addr and command_no and register and value:
         try:
@@ -98,10 +99,10 @@ def prepare_command():
                 "comment1": '',
                 "comment2": '',
                 "delay": '',
-                'deviceAddr':'',
+                'deviceAddr': '',
                 'register': '',
                 'command': formatted_command,
-                'value': '' ,
+                'value': '',
                 'commandNo': ''}
 
             session['form_data_comments'] = form_data_comments
@@ -186,56 +187,9 @@ def save_table_data():
         except json.JSONDecodeError:
             return "Failed to decode JSON", 400
     return "No data provided", 400
-
-#
-#
-# def run_file():
-#     global client, stop_event
-#     stop_event.clear()  # Сбрасываем флаг остановки
-#     form_data_comments = session.get('form_data_comments', OrderedDict())
-#     if not form_data_comments:
-#         session['log'] = "No commands to run."
-#         return redirect(url_for('index'))
-#     count = request.form.get('count', '1')  # Получаем значение из формы, по умолчанию 1
-#     try:
-#         count = int(count)
-#     except ValueError:
-#         count = 1
-#     try:
-#         sorted_keys = sorted(form_data_comments.keys(), key=int)
-#         for i in range(count):
-#             for idx in sorted_keys:
-#                 if stop_event.is_set():
-#                     session['log'] += "\nExecution stopped by user.\n"
-#                     break
-#                 print(idx)
-#                 command_data = form_data_comments[idx]
-#                 try:
-#                     delay = int(command_data.get('delay', 0))
-#                 except ValueError:
-#                     session['log'] += f"Invalid delay value for command {idx}: {command_data.get('delay')}\n"
-#                     continue
-#                 device_addr = command_data['deviceAddr']
-#                 command = command_data['commandNo']
-#                 register = command_data['register']
-#                 value = command_data['value']
-#                 command_info = command_data['command']
-#
-#                 response = send_modbus_command(device_addr, command, register, value, client)
-#                 session['log'] += f">> {command_info}\n<< Response: {response}\n"
-#                 print(command_info)
-#                 time.sleep(delay)
-#
-#     except Exception as e:
-#         session['log'] = f"Failed to send command: {str(e)}"
-#
-#     return redirect(url_for('index'))
-
-
-def STOP():
-    with open('stop.json', 'r') as f:  # Removed 'encoding' argument
-        table_data = json.load(f)
+def update_data(table_data):
     if table_data:
+        print("in")
         form_data_comments = OrderedDict()
         for idx, command_data in enumerate(table_data):
             form_data_comments[idx] = {
@@ -252,6 +206,14 @@ def STOP():
         session['form_data_comments'] = form_data_comments
     else:
         session['log'] = 'No tableData provided'
+    return redirect(url_for('index'))
+def STOP():
+    with open('stop.json', 'r') as f:  # Removed 'encoding' argument
+        table_data = json.load(f)
+    print("IN")
+    update_data(table_data)
+    form_data_comments = session.get('form_data_comments', {})
+    print(form_data_comments)
     sorted_keys = sorted(form_data_comments.keys(), key=int)
     for idx in sorted_keys:
         command_data = form_data_comments[idx]
@@ -271,6 +233,28 @@ def STOP():
         session['log'] += log_message
         time.sleep(delay)
     return redirect(url_for('index'))
+
+# def run_file():
+#     global client, stop_event
+#     stop_event.clear()  # Сбрасываем флаг остановки
+#     with open('table_data.json', 'r', encoding='utf-8') as f:
+#         commands = json.load(f)
+#     count = request.form.get('count', '1')  # Получаем значение из формы, по умолчанию 1
+#     try:
+#         count = int(count)
+#     except ValueError:
+#         count = 1
+#     for i in range(count):
+#         for command in commands:
+#             func_name = command.get('func_name')
+#             delay = command.get('delay')
+#             if func_name in command_mapping:
+#                 response = command_mapping[func_name](client)
+#                 session['log'] += f">> {func_name}\n<< Response: {response}\n"
+#                 time.sleep(delay)
+#             else:
+#                 session['log'] += f"Unknown command: {func_name}"
+#     return redirect(url_for('index'))
 
 def run_file():
     global client, stop_event
@@ -509,3 +493,22 @@ def open_dev():
     except Exception as e:
         session['log'] = f"Failed to load or execute commands: {str(e)}"
     return redirect(url_for('index'))
+
+
+def save_code():
+    try:
+        data = request.get_json()
+        code = data['code']
+        with open('user_code.py', 'w') as f:
+            f.write(code)
+        return jsonify({'message': 'Code saved successfully!'})
+    except Exception as e:
+        return jsonify({'message': f'Error saving code: {str(e)}'})
+
+
+def run_code():
+    try:
+        result = subprocess.run(['python3', 'user_code.py'], capture_output=True, text=True)
+        return jsonify({'output': result.stdout + result.stderr})
+    except Exception as e:
+        return jsonify({'output': f'Error running code: {str(e)}'})

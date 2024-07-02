@@ -1,5 +1,17 @@
 [
     {
+        "comment1": "осветитель",
+        "comment2": "зажечь",
+        "delay": "0",
+        "color": "white",
+        "deviceAddr": "2",
+        "value": "1",
+        "register": "12",
+        "commandNo": "05",
+        "command": "01 06 04 01 09 CB",
+        "command_row": "0"
+    },
+    {
         "comment1": "",
         "comment2": "",
         "delay": "0",
@@ -48,7 +60,19 @@
         "command_row": "3"
     },
     {
-        "comment1": "",
+        "comment1": "прерывания",
+        "comment2": "",
+        "delay": "0",
+        "color": "white",
+        "deviceAddr": "1",
+        "value": "0",
+        "register": "38",
+        "commandNo": "05",
+        "command": "01 06 09 01 98 08",
+        "command_row": "4"
+    },
+    {
+        "comment1": "до 1 dir1",
         "comment2": "",
         "delay": "0",
         "color": "white",
@@ -60,7 +84,7 @@
         "command_row": "4"
     },
     {
-        "comment1": "до 1 dir1",
+        "comment1": "",
         "comment2": "",
         "delay": "1",
         "color": "white",
@@ -86,7 +110,7 @@
     {
         "comment1": "",
         "comment2": "",
-        "delay": "3",
+        "delay": "1",
         "color": "white",
         "deviceAddr": "1",
         "value": "1",
@@ -101,7 +125,7 @@
         "delay": "0",
         "color": "white",
         "deviceAddr": "1",
-        "value": "79",
+        "value": "87",
         "register": "7",
         "commandNo": "06",
         "command": "01 06 07 DC0 2E 83",
@@ -110,13 +134,73 @@
     {
         "comment1": "",
         "comment2": "",
-        "delay": "3",
+        "delay": "0",
         "color": "white",
         "deviceAddr": "1",
-        "value": "92",
+        "value": "348",
         "register": "10",
         "commandNo": "06",
         "command": "02 05 04 01 4D F8",
         "command_row": "9"
+    },
+    {
+        "comment1": "прерывания",
+        "comment2": "",
+        "delay": "0",
+        "color": "white",
+        "deviceAddr": "2",
+        "value": "0",
+        "register": "38",
+        "commandNo": "05",
+        "command": "01 06 09 01 98 08",
+        "command_row": "4"
+    },
+    {
+        "comment1": "ось фокусировки",
+        "comment2": "вниз",
+        "delay": "0",
+        "color": "white",
+        "deviceAddr": "2",
+        "value": "1",
+        "register": "14",
+        "commandNo": "06",
+        "command": "02 05 04 01 4D F8",
+        "command_row": "30"
+    },
+    {
+        "comment1": "ось фокусировки",
+        "comment2": "поехать",
+        "delay": "0",
+        "color": "white",
+        "deviceAddr": "2",
+        "value": "221",
+        "register": "15",
+        "commandNo": "06",
+        "command": "02 05 04 01 4D F8",
+        "command_row": "30"
+    },
+    {
+        "comment1": "ось фокусировки",
+        "comment2": "назад",
+        "delay": "0",
+        "color": "white",
+        "deviceAddr": "2",
+        "value": "1",
+        "register": "9",
+        "commandNo": "06",
+        "command": "02 05 04 01 4D F8",
+        "command_row": "30"
+    },
+    {
+        "comment1": "ось фокусировки",
+        "comment2": "поехать",
+        "delay": "0",
+        "color": "white",
+        "deviceAddr": "2",
+        "value": "221",
+        "register": "10",
+        "commandNo": "06",
+        "command": "02 05 04 01 4D F8",
+        "command_row": "30"
     }
 ]
