@@ -246,161 +246,154 @@
         </div>
         <div class="main-content">
             <div class="left-side">
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active" id="tab1-tab" data-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">Modbus</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="tab2-tab" data-toggle="tab" href="#tab2" role="tab" aria-controls="tab2" aria-selected="false">Tab 2</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="tab3-tab" data-toggle="tab" href="#tab3" role="tab" aria-controls="tab3" aria-selected="false">Tab 3</a>
-                    </li>
-                </ul>
-                <div class="tab-content" id="myTabContent">
-                    <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
-                        <form action="/prepare_command" method="POST" class="form-inline">
-                             <div class="form-group">
-                                <label for="mode" class="sr-only">Mode</label>
-                                <select class="form-control mb-2 col-xs-2 col-sm-5 " id="mode" name="mode" required>
-                                    <option value="hex">hex</option>
-                                    <option value="dec">dec</option>
-                                    <option value="ascii">ascii</option>
-                                    <option value="bin">bin</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="deviceAddr" class="sr-only">Device Addr</label>
-                                <input type="text" class="form-control mb-2 col-xs-2 col-sm-9 " id="deviceAddr" name="deviceAddr" placeholder="Device Address" value="{{ form_data_com.deviceAddr }}" required >
-                            </div>
-                            <div class="form-group">
-                                <label for="commandNo" class="sr-only">Command No</label>
-                                <select class="form-control mb-2 col-xs-2 col-sm-9 " id="commandNo" name="commandNo" required>
-                                    <option value="01" {% if form_data_com.commandNo=='01'%} selected {% endif %} >01 read coils</option>
-                                    <option value="02" {% if form_data_com.commandNo=='02'%} selected {% endif %}>02 read discrete inputs</option>
-                                    <option value="03" {% if form_data_com.commandNo =='03'%} selected {% endif %}>03 read holding registers</option>
-                                    <option value="04" {% if form_data_com.commandNo =='04'%} selected {% endif %}>04 read input registers</option>
-                                    <option value="05" {% if form_data_com.commandNo =='05'%} selected {% endif %}>05 write single coils</option>
-                                    <option value="06" {% if form_data_com.commandNo =='06'%} selected {% endif %}>06 write single registers</option>
-                                    <option value="15" {% if form_data_com.commandNo =='15'%} selected {% endif %}>15 write multiple coils</option>
-                                    <option value="16" {% if form_data_com.commandNo =='16'%} selected {% endif %}>16 write multiple register</option>
-
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="register" class="sr-only">Register</label>
-                                <input type="text" class="form-control mb-2 col-xs-2 col-sm-6 " id="register" name="register" placeholder="Register" value="{{ form_data_com.register }}"required>
-                            </div>
-                            <div class="form-group">
-                                <label for="value" class="sr-only">Value</label>
-                                <input type="text" class="form-control mb-2 col-xs-2 col-sm-4 " id="value" name="value" placeholder="Value" value="{{ form_data_com.value }}"required>
-                            </div>
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary mb-2">Prepare</button>
-                            </div>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="tab1-tab" data-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">Modbus</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab2-tab" data-toggle="tab" href="#tab2" role="tab" aria-controls="tab2" aria-selected="false">Python code</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab3-tab" data-toggle="tab" href="#tab3" role="tab" aria-controls="tab3" aria-selected="false">Tab 3</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+                <form action="/prepare_command" method="POST" class="form-inline">
+                    <div class="form-group">
+                        <label for="mode" class="sr-only">Mode</label>
+                        <select class="form-control mb-2 col-xs-2 col-sm-5" id="mode" name="mode" required>
+                            <option value="hex">hex</option>
+                            <option value="dec">dec</option>
+                            <option value="ascii">ascii</option>
+                            <option value="bin">bin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="deviceAddr" class="sr-only">Device Addr</label>
+                        <input type="text" class="form-control mb-2 col-xs-2 col-sm-9" id="deviceAddr" name="deviceAddr" placeholder="Device Address" value="{{ form_data_com.deviceAddr }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="commandNo" class="sr-only">Command No</label>
+                        <select class="form-control mb-2 col-xs-2 col-sm-9" id="commandNo" name="commandNo" required>
+                            <option value="01" {% if form_data_com.commandNo=='01' %} selected {% endif %}>01 read coils</option>
+                            <option value="02" {% if form_data_com.commandNo=='02' %} selected {% endif %}>02 read discrete inputs</option>
+                            <option value="03" {% if form_data_com.commandNo =='03' %} selected {% endif %}>03 read holding registers</option>
+                            <option value="04" {% if form_data_com.commandNo =='04' %} selected {% endif %}>04 read input registers</option>
+                            <option value="05" {% if form_data_com.commandNo =='05' %} selected {% endif %}>05 write single coils</option>
+                            <option value="06" {% if form_data_com.commandNo =='06' %} selected {% endif %}>06 write single registers</option>
+                            <option value="15" {% if form_data_com.commandNo =='15' %} selected {% endif %}>15 write multiple coils</option>
+                            <option value="16" {% if form_data_com.commandNo =='16' %} selected {% endif %}>16 write multiple register</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="register" class="sr-only">Register</label>
+                        <input type="text" class="form-control mb-2 col-xs-2 col-sm-6" id="register" name="register" placeholder="Register" value="{{ form_data_com.register }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="value" class="sr-only">Value</label>
+                        <input type="text" class="form-control mb-2 col-xs-2 col-sm-4" id="value" name="value" placeholder="Value" value="{{ form_data_com.value }}" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary mb-2">Prepare</button>
+                    </div>
+                </form>
+                <div class="container">
+                    <button class="btn btn-info mb-2" type="button" data-toggle="collapse" data-target="#savedCommandsTable" aria-expanded="false" aria-controls="savedCommandsTable">
+                        Show history
+                    </button>
+                    <div id="savedCommandsTable" class="collapse">
+                        <form method="POST" action="/send_command" class="form-section">
+                            <table class="table command-table">
+                                <thead>
+                                    <tr>
+                                        <th>Idx</th>
+                                        <th>Comment 1</th>
+                                        <th>Command</th>
+                                        <th>Comment 2</th>
+                                        <th>Status</th>
+                                        <th>Delay</th>
+                                        <th>Del</th>
+                                    </tr>
+                                </thead>
+                                <colgroup>
+                                    <col style="width: 3%;">
+                                    <col style="width: 15%;">
+                                    <col style="width: 15%;">
+                                    <col style="width: 15%;">
+                                    <col style="width: 10%;">
+                                    <col style="width: 15%;">
+                                    <col style="width:3%">
+                                </colgroup>
+                                <tbody id="commandTable">
+                                    {% for idx, command in form_data_comments.items() %}
+                                    <tr id="command_row_{{ idx }}" class="command-row">
+                                        <td class="first-column">{{ idx }}
+                                            <input type="hidden" name="command_row" value="{{ idx }}">
+                                            <input type="hidden" id="deviceAddr1_{{ idx }}" name="deviceAddr1_{{ idx }}" value="{{ command.deviceAddr }}">
+                                            <input type="hidden" id="register1_{{ idx }}" name="register1_{{ idx }}" value="{{ command.register }}">
+                                            <input type="hidden" id="commandNo1_{{ idx }}" name="commandNo1_{{ idx }}" value="{{ command.commandNo }}">
+                                            <input type="hidden" id="value1_{{ idx }}" name="value1_{{ idx }}" value="{{ command.value }}">
+                                            <input type="hidden" id="command1_{{ idx }}" name="command1_{{ idx }}" value="{{ command.command }}">
+                                        </td>
+                                        <td><input type="text" name="comment1_{{ idx }}" class="form-control" value="{{ command.comment1 }}"></td>
+                                        <td>{{ command.command }}</td>
+                                        <td><input type="text" name="comment2_{{ idx }}" class="form-control" value="{{ command.comment2 }}"></td>
+                                        <td>
+                                            <select class="color-select" name="color_{{ idx }}">
+                                                <option value="white" {% if command.color == 'white' %} selected {% endif %}>not deb</option>
+                                                <option value="green" {% if command.color == 'green' %} selected {% endif %}>deb</option>
+                                                <option value="yellow" {% if command.color == 'yellow' %} selected {% endif %}>not full deb</option>
+                                                <option value="red" {% if command.color == 'red' %} selected {% endif %}>DNT work</option>
+                                            </select>
+                                            <input type="hidden" name="selected_color_{{ idx }}" value="{{ command.color }}">
+                                        </td>
+                                        <td><input type="number" name="delay_{{ idx }}" class="form-control" value="{{ command.delay }}"></td>
+                                        <td><button type="button" class="btn btn-sm btn-danger" onclick="deleteRow('{{ idx }}')">X</button></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <button type="submit" class="btn btn-primary">Run</button>
                         </form>
-                        <div class="container">
-                            <button class="btn btn-info mb-2" type="button" data-toggle="collapse" data-target="#savedCommandsTable" aria-expanded="false" aria-controls="savedCommandsTable">
-                                Show history
-                            </button>
-                                <div id="savedCommandsTable" class="collapse">
-                                    <form method="POST" action="/send_command" class="form-section">
-                                        <table class="table command-table">
-                                            <thead>
-                                                <tr>
-                                                  <th>Idx</th>
-                                                  <th>Comment 1</th>
-                                                  <th>Command</th>
-                                                  <th>Comment 2</th>
-                                                  <th>Status</th>
-                                                  <th>Delay</th>
-                                                  <th>Del</th>
-                                                </tr>
-                                              </thead>
-                                            <colgroup>
-                                                <col style="width: 3%;">
-                                                <col style="width: 15%;">
-                                                <col style="width: 15%;">
-                                                <col style="width: 15%;">
-                                                <col style="width: 10%;">
-                                                <col style="width: 15%;">
-                                                <col style="width:3%">
-                                            </colgroup>
-
-                                            <tbody id="commandTable">
-                                                {% for idx, command in form_data_comments.items() %}
-                                                <tr id="command_row_{{ idx }}" class="command-row">
-                                                    <td class="first-column" >{{ idx }}
-                                                        <input type="hidden" name="command_row" value="{{ idx }}">
-                                                        <input type="hidden" id=deviceAddr1_{{idx}} name="deviceAddr1_{{idx}}" value="{{command.deviceAddr}}">
-                                                        <input type="hidden" id=register1_{{idx}} name="register1_{{ idx }}" value="{{command.register}}">
-                                                        <input type="hidden" id=commandNo1_{{idx}} name="commandNo1_{{ idx }}" value="{{command.commandNo}}">
-                                                        <input type="hidden" id=value1_{{idx}} name="value1_{{ idx }}" value="{{command.value}}">
-                                                        <input type="hidden" id=command1_{{idx}} name="command1_{{ idx }}" value="{{command.command}}">
-                                                    </td>
-                                                    <td><input type="text" name="comment1_{{ idx }}" class="form-control" value="{{command.comment1}}"> </td>
-                                                    <td>{{ command.command }}</td>
-                                                    <td><input type="text" name="comment2_{{ idx }}" class="form-control" value="{{ command.comment2}}"></td>
-                                                    <td>
-                                                        <select class="color-select" name="color_{{ idx }}">
-                                                            <option value="white" {% if command.color =='white'%} selected {% endif %}>not deb</option>
-                                                            <option value="green" {% if command.color =='green'%} selected {% endif %}>deb</option>
-                                                            <option value="yellow" {% if command.color =='yellow'%} selected {% endif %}>not full deb</option>
-                                                            <option value="red" {% if command.color =='red'%} selected {% endif %}>DNT work</option>
-                                                        </select>
-                                                        <input type="hidden" name="selected_color_{{ idx }}" value="{{ command.color }}">
-                                                    </td>
-                                                    <td><input type="number" name="delay_{{ idx }}" class="form-control" value="{{ command.delay }}"></td>
-                                                    <td><button type="button" class="btn btn-sm btn-danger" onclick="deleteRow('{{ idx }}')">X</button></td>
-                                                </tr>
-
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                            <button type="submit" class="btn btn-primary ">Run</button>
-                                    </form>
-                                    <div class="d-flex mt-2">
-                                            <form action="/clear_history" method="POST" class="me-2">
-                                                <button type="submit" class="btn btn-warning mt-2">Clear History</button>
-                                            </form>
-                                            <!-- Save Data Button -->
-                                            <form id="saveForm" action="/save_table_data" method="POST">
-                                                <input type="hidden" id="tableData" name="tableData">
-                                                <button type="button" class="btn btn-primary mt-2 ml-2" onclick="saveTableData()">Save Table Data</button>
-                                            </form>
-                                        </div>
-
-                                </div>
-                            </div>
+                        <div class="d-flex mt-2">
+                            <form action="/clear_history" method="POST" class="me-2">
+                                <button type="submit" class="btn btn-warning mt-2">Clear History</button>
+                            </form>
+                            <!-- Save Data Button -->
+                            <form id="saveForm" action="/save_table_data" method="POST">
+                                <input type="hidden" id="tableData" name="tableData">
+                                <button type="button" class="btn btn-primary mt-2 ml-2" onclick="saveTableData()">Save Table Data</button>
+                            </form>
                         </div>
-                    <!-- Load Data Button
-                    <div class="d-flex mt-2">
-                    <button id="loadAndRunFileBtn" class="btn btn-primary">Prepare device</button>
-                    <form id="loadForm" action="/load_table_data" method="POST" class="d-flex align-items-center">
-                        <input type="file" id="jsonFileInput" class="form-control-file mе-3 ml-2 " accept=".json">
-                        <button type="button" class="btn btn-primary mt-2" style="height: 38px;" onclick="loadTableData()">Load Table Data</button>
-                    </form>  -->
-                    <div class="d-flex mt-2">
-                        <button id="loadAndRunFileBtn" class="btn btn-primary mt-2">Prepare device</button>
-                        <button id="open" class="btn btn-primary ml-2 mt-2">Open</button>
-                    <form id="RunFileForm" action="/run_file"  method="POST" class="d-flex align-items-center">
-                        <button type="submit" class="btn btn-primary mt-2 ml-2">RUN</button>
-                        <input type="text" name="count" class="form-control ml-2 mt-2 col-xs-2 col-sm-6" value="Выполнить {{count}} раз">
-                    </form>
-                    <button id="stopExecutionBtn" class="btn btn-danger ml-2">Stop</button>
-                    <button id="stopFileBtn" class="btn btn-danger ml-2"> Emergency Stop</button>
-                    </div>
-                    <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
-                        <textarea id="pythonCode" rows="10" cols="50"># Write your Python code here</textarea><br>
-                        <button id="saveButton">Save to File</button>
-                        <button id="runButton">Run Code</button>
-                        <div id="output"></div>
-                    </div>
-                    <div class="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="tab3-tab">
-                        Content for tab 3.
                     </div>
                 </div>
+                <div class="d-flex mt-2">
+                    <button id="loadAndRunFileBtn" class="btn btn-primary mt-2">Prepare device</button>
+                    <button id="open" class="btn btn-primary ml-2 mt-2">Take cassette</button>
+                    <form id="RunFileForm" action="/run_file" method="POST" class="d-flex align-items-center">
+                        <button type="submit" class="btn btn-primary mt-2 ml-2">RUN</button>
+                        <input type="text" name="count" class="form-control ml-2 mt-2 col-xs-2 col-sm-6" value="Выполнить {{ count }} раз">
+                    </form>
+                    <button id="stopExecutionBtn" class="btn btn-danger ml-2">Stop</button>
+                    <button id="stopFileBtn" class="btn btn-danger ml-2">Emergency Stop</button>
+                </div>
             </div>
+            <div class="tab-pane fade mt-2" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
+                <textarea id="pythonCode" rows="10" cols="129" placeholder="Write your Python code here..."></textarea><br>
+                <button id="saveButton">Save Code</button>
+                <form id="loadForm" action="/load_table_data" method="POST" class="d-flex align-items-center">
+                    <input type="file" id="pyFileInput" class="form-control-file me-3 ml-2" accept=".py">
+                    <button type="button" class="btn btn-primary mt-2" style="height: 38px;" onclick="loadPyFile()">Load Python File</button>
+                </form>
+                <button id="runButton">Run Code</button>
+                <pre id="output"></pre>
+            </div>
+            <div class="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="tab3-tab">
+                Content for tab 3.
+            </div>
+        </div>
+    </div>
             <div class="right-side">
                 <div class="right-side-content">
                      <h3>Log:</h3>
@@ -642,33 +635,81 @@ function setColorForRows() {
                 }
             });
         });
-        document.addEventListener("DOMContentLoaded", function() {
-            document.getElementById("saveButton").addEventListener("click", function() {
-                const code = document.getElementById("pythonCode").value;
-                fetch('/save_code', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ code: code }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
+            document.addEventListener("DOMContentLoaded", function() {
+                document.getElementById("saveButton").addEventListener("click", function() {
+                    const code = document.getElementById("pythonCode").value;
+                    fetch('/save_code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ code: code }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                    });
+                });
+
+                document.getElementById("runButton").addEventListener("click", function() {
+                    fetch('/run_code', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById("output").innerText = data.output;
+                    });
                 });
             });
+        function loadPyFile() {
+    const fileInput = document.getElementById('pyFileInput');
+    const file = fileInput.files[0];
 
-            document.getElementById("runButton").addEventListener("click", function() {
-                fetch('/run_code', {
-                    method: 'POST'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("output").innerText = data.output;
-                });
+    if (file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/upload_py_file', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Python file loaded successfully');
+            // Дополнительные действия после успешной загрузки
+        } else {
+            alert('Failed to load Python file');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while uploading the file');
+    });
+} else {
+    alert('Please select a file first');
+}
+ function executeCode() {
+            fetch('/run_code', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Code executed successfully');
+                    console.log('Output:', data.output);
+                } else {
+                    alert('Failed to execute code');
+                    console.error('Output:', data.output);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while executing the code');
             });
-        });
+        }
 
+}
 
 
     </script>
