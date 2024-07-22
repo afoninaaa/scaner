@@ -1,16 +1,10 @@
-import time
+from command_sending.modbus_commands import send_modbus_command
+from utils.modbus_utils import time_sleep
 from flask import session
-from Modbus_comands import send_modbus_command  # Импорт вашей библиотеки Modbus
-import funcs
-from flask import redirect, url_for, session
 
 
-def exec_by_name(func_name, client, table_data, emergency_stop_event):
+def exec_by_name(func_name, client, table_data):
     for command_data in table_data:
-        if emergency_stop_event.is_set():
-            session['log'] += "\nEmergency stop activated. Execution stopped immediately.\n"
-            funcs.power_off()
-            return redirect(url_for('index'))
         if command_data.get('func_name') == func_name:
             device_addr = int(command_data.get('deviceAddr'))
             command = command_data.get('commandNo')
@@ -21,165 +15,266 @@ def exec_by_name(func_name, client, table_data, emergency_stop_event):
             session['log'] += f">> {func_name}\n<< Response: {response}\n"
             if not success:
                 return  # Остановить выполнение при ошибке
-            time.sleep(delay)
+            time_sleep(client, delay)
+            print(response)
             return response
     return f"Command {func_name} not found.", False
 
 
-def execute_commands_run(emergency_stop_event, client, table_data):
-    exec_by_name('illuminator_on', client, table_data, emergency_stop_event)
-
-    if ((exec_by_name('slave1_sensor_dir2', client, table_data, emergency_stop_event)[0] != 2)
-            or (exec_by_name('slave2_sensor_dir2', client, table_data, emergency_stop_event)[0] != 2)):
-
-        raise ValueError("Axis are not in first direction, needed to prepare device")
-
+def loading_module(client, table_data):
+    # ожидание кассеты в модуле загрузки
     while True:
-        response = exec_by_name('slave1_cassette_sensor', client, table_data, emergency_stop_event)[0]
-        if response is True:  # Если первое значение в response True
-            exec_by_name('red_off', client, table_data, emergency_stop_event)
-            exec_by_name('green_on', client, table_data, emergency_stop_event)
-            break  # Выход из цикла, если условие выполнено
-        else:
-            exec_by_name('green_off', client, table_data, emergency_stop_event)
-            exec_by_name('red_on', client, table_data, emergency_stop_event)
-
-    while True:
-        response = exec_by_name('slave1_check_cassette', client, table_data, emergency_stop_event)
-
-        if response[6] is False and response[7] is False:
-            exec_by_name('red_off', client, table_data, emergency_stop_event)
-            exec_by_name('green_on', client, table_data, emergency_stop_event)
-            break  # Выход из цикла, если условие выполнено
-        else:
-            exec_by_name('green_off', client, table_data, emergency_stop_event)
-            exec_by_name('red_on', client, table_data, emergency_stop_event)
-    exec_by_name('drum_power_off', client, table_data, emergency_stop_event)
-    exec_by_name('slave1_axis1_dir2', client, table_data, emergency_stop_event)
-    exec_by_name('slave1_axis1_run', client, table_data, emergency_stop_event)
-    # if exec_by_name('slave1_sensor_dir2', client, table_data, emergency_stop_event)[0] != 4:
-    #     exec_by_name('slave1_axis1_dir1', client, table_data, emergency_stop_event)
-    #     exec_by_name('slave1_axis1_run', client, table_data, emergency_stop_event)
-    #     exec_by_name('slave1_axis1_dir2', client, table_data, emergency_stop_event)
-    #     exec_by_name('slave1_axis1_run', client, table_data, emergency_stop_event)
-    #     if exec_by_name('slave1_sensor_dir2', client, table_data, emergency_stop_event)[0] != 4:
-    #         session['log'] += f" Не удалось доехать до положения 2"
-    #         return
-    exec_by_name('solenoid3_on', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid4_on', client, table_data, emergency_stop_event)
-    exec_by_name('drum_115_steps', client, table_data, emergency_stop_event)
-    exec_by_name('drum_10_349', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid3_off', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid4_off', client, table_data, emergency_stop_event)
-    exec_by_name('slave1_axis1_dir1', client, table_data, emergency_stop_event)
-    exec_by_name('slave1_axis1_run', client, table_data, emergency_stop_event)
-    exec_by_name('drum_10_210', client, table_data, emergency_stop_event)
-    exec_by_name('strictly_in_positive_way', client, table_data, emergency_stop_event)
-    exec_by_name('drum_in_35_1', client, table_data, emergency_stop_event)
-    exec_by_name('drum_run', client, table_data, emergency_stop_event)
-    exec_by_name('slave2_axis1_dir2', client, table_data, emergency_stop_event)
-    exec_by_name('slave_2_run', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid5_on', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid6_on', client, table_data, emergency_stop_event)
-    exec_by_name('drum_half_in_positive', client, table_data, emergency_stop_event)
-    exec_by_name('drum_run_half_positive', client, table_data, emergency_stop_event)
-    exec_by_name('drum_10_210', client, table_data, emergency_stop_event)
-    exec_by_name('strictly_in_positive_way', client, table_data, emergency_stop_event)
-    exec_by_name('drum_in_35_1', client, table_data, emergency_stop_event)
-    exec_by_name('drum_run', client, table_data, emergency_stop_event)
-    exec_by_name('drum_120_steps', client, table_data, emergency_stop_event)
-    exec_by_name('drum_10_348', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid5_off', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid6_off', client, table_data, emergency_stop_event)
-    exec_by_name('drum_power_off', client, table_data, emergency_stop_event)
-    exec_by_name('slave2_axis1_dir1', client, table_data, emergency_stop_event)
-    exec_by_name('slave_2_run', client, table_data, emergency_stop_event)
-    while True:
-        response = exec_by_name('slave2_cassette_sensor', client, table_data, emergency_stop_event)
-        if response[0] is True:  # Если первое значение в response True
-            exec_by_name('red_off', client, table_data, emergency_stop_event)
-            exec_by_name('green_on', client, table_data, emergency_stop_event)
+        response = exec_by_name('slave1_cassette_sensor', client, table_data)[0]
+        if response is True:
+            exec_by_name('yellow_off', client, table_data)
+            exec_by_name('green_on', client, table_data)
             break
         else:
-            exec_by_name('green_off', client, table_data, emergency_stop_event)
-            exec_by_name('red_on', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_steps_up', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_run_up', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_steps_straight', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_run_straight', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_steps_back', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_run_back', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_dir1', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_run_down', client, table_data, emergency_stop_event)
-    exec_by_name('drum_power_off', client, table_data, emergency_stop_event)
-    exec_by_name('slave2_axis1_dir2', client, table_data, emergency_stop_event)
-    exec_by_name('slave_2_run', client, table_data, emergency_stop_event)
-    # if exec_by_name('slave2_sensor_dir2', client, table_data, emergency_stop_event)[0] != 4:
-    #     exec_by_name('slave2_axis1_dir1', client, table_data, emergency_stop_event)
-    #     exec_by_name('slave_2_run', client, table_data, emergency_stop_event)
-    #     exec_by_name('slave2_axis1_dir2', client, table_data, emergency_stop_event)
-    #     exec_by_name('slave_2_run', client, table_data, emergency_stop_event)
-    #     if exec_by_name('slave2_sensor_dir2', client, table_data, emergency_stop_event)[0] != 4:
-    #         session['log'] += f" Не удалось доехать до положения 2"
-    #         return
-    exec_by_name('solenoid5_on', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid6_on', client, table_data, emergency_stop_event)
-    exec_by_name('drum_10_210', client, table_data, emergency_stop_event)
-    exec_by_name('strictly_in_positive_way', client, table_data, emergency_stop_event)
-    exec_by_name('drum_in_35_1', client, table_data, emergency_stop_event)
-    exec_by_name('drum_run', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid5_off', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid6_off', client, table_data, emergency_stop_event)
-    exec_by_name('slave2_axis1_dir1', client, table_data, emergency_stop_event)
-    exec_by_name('slave_2_run', client, table_data, emergency_stop_event)
-    exec_by_name('slave1_axis1_dir2', client, table_data, emergency_stop_event)
-    exec_by_name('slave1_axis1_run', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid3_on', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid4_on', client, table_data, emergency_stop_event)
-    exec_by_name('drum_half_in_negative_way', client, table_data, emergency_stop_event)
-    exec_by_name('drum_run_half_negative', client, table_data, emergency_stop_event)
-    exec_by_name('drum_run_123_steps', client, table_data, emergency_stop_event)
-    exec_by_name('drum_10_349', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid3_off', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid4_off', client, table_data, emergency_stop_event)
-    exec_by_name('slave1_axis1_dir1', client, table_data, emergency_stop_event)
-    exec_by_name('slave1_axis1_run', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid1_on', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid2_on', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid1_off', client, table_data, emergency_stop_event)
-    exec_by_name('solenoid2_off', client, table_data, emergency_stop_event)
-    exec_by_name('green_off', client, table_data, emergency_stop_event)
+            exec_by_name('green_off', client, table_data)
+            exec_by_name('yellow_on', client, table_data)
+    # проверка на правильность вставки кассеты
+    while True:
+        response = exec_by_name('slave1_check_cassette', client, table_data)
+        if response[6] is False and response[7] is False:
+            exec_by_name('red_off', client, table_data)
+            exec_by_name('green_on', client, table_data)
+            break
+        else:
+            exec_by_name('green_off', client, table_data)
+            exec_by_name('red_on', client, table_data)
+
+    # выключение питания у барабана
+    exec_by_name('drum_power_off', client, table_data)
+
+    # каретка в положение 2 (до барабана)
+    exec_by_name('slave1_axis1_dir2', client, table_data)
+    exec_by_name('slave1_axis1_run', client, table_data)
+
+    # проверка на позиции каретки
+    if exec_by_name('slave1_sensor_dir2', client, table_data)[0] != 4:
+
+        exec_by_name('slave1_axis1_dir1', client, table_data)
+        exec_by_name('slave1_axis1_run', client, table_data)
+
+        response = exec_by_name('slave1_cassette_sensor', client, table_data)[0]
+
+        if response is True:
+            exec_by_name('slave1_axis1_dir2', client, table_data)
+            exec_by_name('slave1_axis1_run', client, table_data)
+
+            if exec_by_name('slave1_sensor_dir2', client, table_data)[0] != 4:
+                session['log'] += f" Не удалось доехать до положения 2"
+                return
+
+    # поворот барабана на полшага
+    drum_module_half_steps(client, table_data)
+
+    # каретка до первой позиции (от барабана)
+    exec_by_name('slave1_axis1_dir1', client, table_data)
+    exec_by_name('slave1_axis1_run', client, table_data)
 
 
-def execute_commands_prepare_dev(client, table_data, emergency_stop_event):
-    exec_by_name('illuminator_on', client, table_data, emergency_stop_event)
-    exec_by_name('slave1_axis1_dir1', client, table_data, emergency_stop_event)
-    exec_by_name('slave1_axis1_run', client, table_data, emergency_stop_event)
-    exec_by_name('slave2_axis1_dir1', client, table_data, emergency_stop_event)
-    exec_by_name('slave_2_run', client, table_data, emergency_stop_event)
-    exec_by_name('interraptions1', client, table_data, emergency_stop_event)
-    exec_by_name('drum_direction', client, table_data, emergency_stop_event)
-    exec_by_name('drum_10_210', client, table_data, emergency_stop_event)
-    exec_by_name('strictly_in_positive_way', client, table_data, emergency_stop_event)
-    exec_by_name('drum_in_35_1', client, table_data, emergency_stop_event)
-    exec_by_name('drum_run_87_steps', client, table_data, emergency_stop_event)
-    exec_by_name('drum_10_348', client, table_data, emergency_stop_event)
-    exec_by_name('interraptions2', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_dir1', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_run_down', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_back', client, table_data, emergency_stop_event)
-    exec_by_name('focus_axis_run_full_back', client, table_data, emergency_stop_event)
+def drum_module_half_steps(client, table_data):
+    # соленоиды 3 и 4 включить
+    exec_by_name('solenoid3_on', client, table_data)
+    exec_by_name('solenoid4_on', client, table_data)
+    # барабан на полшага
+    # exec_by_name('drum_115_steps', client, table_data, emergency_stop_event)
+    # exec_by_name('drum_10_349', client, table_data, emergency_stop_event)
+    exec_by_name('drum_direction', client, table_data)
+    exec_by_name('drum_10_466', client, table_data)
+    exec_by_name('strictly_in_positive_way', client, table_data)
+    exec_by_name('drum_in_35_1', client, table_data)
+    # соленоиды 3 и 4 выключить
+    exec_by_name('solenoid3_off', client, table_data)
+    exec_by_name('solenoid4_off', client, table_data)
 
 
+def drum_half_turn_positive(client, table_data):
+    # барабан до датчика
+    # exec_by_name('drum_10_466', client, table_data, emergency_stop_event)
+    # exec_by_name('strictly_in_positive_way', client, table_data, emergency_stop_event)
+    # exec_by_name('drum_in_35_1', client, table_data, emergency_stop_event)
+    # exec_by_name('drum_run', client, table_data, emergency_stop_event)
+    scanning_module_1part(client, table_data)
+    # соленоиды 5 и 6 включить
+    exec_by_name('solenoid5_on', client, table_data)
+    exec_by_name('solenoid6_on', client, table_data)
+    # барабан на полоборота в положительную сторону
+    exec_by_name('drum_half_in_positive', client, table_data)
+    exec_by_name('drum_run_half_positive', client, table_data)
+    # барабан до датчика
+    # exec_by_name('drum_10_466', client, table_data, emergency_stop_event)
+    # exec_by_name('strictly_in_positive_way', client, table_data, emergency_stop_event)
+    # exec_by_name('drum_in_35_1', client, table_data, emergency_stop_event)
+    # exec_by_name('drum_run', client, table_data, emergency_stop_event)
+    # # барабан минус 120 шагов
+    # exec_by_name('drum_120_steps', client, table_data, emergency_stop_event)
+    # exec_by_name('drum_10_348', client, table_data, emergency_stop_event)
+    # соленоиды 5 и 6 выключить
+    exec_by_name('solenoid5_off', client, table_data)
+    exec_by_name('solenoid6_off', client, table_data)
+    # выключить питание у барабана
+    exec_by_name('drum_power_off', client, table_data)
 
 
+def scanning_module_1part(client, table_data):
+    # каретка до позиции 2 (до барабана)
+    exec_by_name('slave2_axis1_dir2', client, table_data)
+    exec_by_name('slave_2_run', client, table_data)
 
 
+def scanning_module(client, table_data):
+    # каретка к положению 1 (от барабана)
+    exec_by_name('slave2_axis1_dir1', client, table_data)
+    exec_by_name('slave_2_run', client, table_data)
+    # проверка на доезд кассеты до сканирования
+    while True:
+        response = exec_by_name('slave2_cassette_sensor', client, table_data)
+        if response[0] is True:  # Если первое значение в response True
+            exec_by_name('red_off', client, table_data)
+            exec_by_name('green_on', client, table_data)
+            break
+        else:
+            exec_by_name('green_off', client, table_data)
+            exec_by_name('red_on', client, table_data)
+    # ось сканирования наверх
+    exec_by_name('focus_axis_steps_up', client, table_data)
+    exec_by_name('focus_axis_run_up', client, table_data)
+    # ось сканирования вперед
+    exec_by_name('focus_axis_steps_straight', client, table_data)
+    exec_by_name('focus_axis_run_straight', client, table_data)
+    # ось сканирования назад
+    exec_by_name('focus_axis_steps_back', client, table_data)
+    exec_by_name('focus_axis_run_back', client, table_data)
+    # ось сканирования наверх
+    exec_by_name('focus_axis_steps_up', client, table_data)
+    exec_by_name('focus_axis_run_up', client, table_data)
+    # ось сканирования вперед
+    exec_by_name('focus_axis_steps_straight', client, table_data)
+    exec_by_name('focus_axis_run_straight', client, table_data)
+    # ось сканирования назад
+    exec_by_name('focus_axis_steps_back', client, table_data)
+    exec_by_name('focus_axis_run_back', client, table_data)
+    # ось сканирования наверх
+    exec_by_name('focus_axis_steps_up', client, table_data)
+    exec_by_name('focus_axis_run_up', client, table_data)
+    # ось сканирования вперед
+    exec_by_name('focus_axis_steps_straight', client, table_data)
+    exec_by_name('focus_axis_run_straight', client, table_data)
+    # ось сканирования назад
+    exec_by_name('focus_axis_steps_back', client, table_data)
+    exec_by_name('focus_axis_run_back', client, table_data)
+    # ось сканирования до первого положения
+    exec_by_name('focus_axis_dir1', client, table_data)
+    exec_by_name('focus_axis_run_down', client, table_data)
+    # выключить питание барабана
+    exec_by_name('drum_power_off', client, table_data)
+    # каретка до положения 2 (до барабана)
+    exec_by_name('slave2_axis1_dir2', client, table_data)
+    exec_by_name('slave_2_run', client, table_data)
+    # проверка положения каретки
+    if exec_by_name('slave2_sensor_dir2', client, table_data)[0] != 4:
+        exec_by_name('slave2_axis1_dir1', client, table_data)
+        exec_by_name('slave_2_run', client, table_data)
+        exec_by_name('slave2_axis1_dir2', client, table_data)
+        exec_by_name('slave_2_run', client, table_data)
+        if exec_by_name('slave2_sensor_dir2', client, table_data)[0] != 4:
+            session['log'] += f" Не удалось доехать до положения 2"
+            return
+    # соленоиды ключить
+    exec_by_name('solenoid5_on', client, table_data)
+    exec_by_name('solenoid6_on', client, table_data)
 
 
+def drum_half_turn_negative(client, table_data):
+    # барабан до флага
+    exec_by_name('drum_direction', client, table_data)
+    exec_by_name('drum_10_466', client, table_data)
+    exec_by_name('strictly_in_positive_way', client, table_data)
+    exec_by_name('drum_in_35_1', client, table_data)
+    exec_by_name('drum_run', client, table_data)
+    # соленоиды 5 и 6 выключить
+    exec_by_name('solenoid5_off', client, table_data)
+    exec_by_name('solenoid6_off', client, table_data)
+    # каретка 2 до положения 1 (от барабана), каретка 1 до положения 2 (к барабану)
+    scanning_module_2part(client, table_data)
+    # соленоиды 3 и 4 включить
+    exec_by_name('solenoid3_on', client, table_data)
+    exec_by_name('solenoid4_on', client, table_data)
+    # барабан полоборота в отрицательную сторону
+    exec_by_name('drum_half_in_positive', client, table_data)
+    exec_by_name('drum_run_half_positive', client, table_data)
+    # барабан 123 шага
+    # exec_by_name('drum_run_123_steps', client, table_data, emergency_stop_event)
+    # exec_by_name('drum_10_349', client, table_data, emergency_stop_event)
+    # соленоид 3 и 4 выключить
+    exec_by_name('solenoid3_off', client, table_data)
+    exec_by_name('solenoid4_off', client, table_data)
 
 
+def scanning_module_2part(client, table_data):
+    # каретка 2 до положения 1
+    exec_by_name('slave2_axis1_dir1', client, table_data)
+    exec_by_name('slave_2_run', client, table_data)
+    # каретка 1 до положения 2
+    exec_by_name('slave1_axis1_dir2', client, table_data)
+    exec_by_name('slave1_axis1_run', client, table_data)
 
 
+def getting_cassette(client, table_data):
+    # каретка 1 до положения 1 (от барабана)
+    exec_by_name('slave1_axis1_dir1', client, table_data)
+    exec_by_name('slave1_axis1_run', client, table_data)
+    # соленоид 1 и 2 включить
+    exec_by_name('solenoid1_on', client, table_data)
+    exec_by_name('solenoid2_on', client, table_data)
+    # соленоид 1 и 2 выключить
+    exec_by_name('solenoid1_off', client, table_data)
+    exec_by_name('solenoid2_off', client, table_data)
+    # выключить зеленый
+    exec_by_name('green_off', client, table_data)
 
 
+def execute_commands_run(client, table_data):
+    if ((exec_by_name('slave1_sensor_dir2', client, table_data)[0] != 2)
+            or (exec_by_name('slave2_sensor_dir2', client, table_data)[0] != 2)):
+
+        raise ValueError("Axis are not in first direction, needed to prepare device")
+    # модуль загрузки
+    loading_module(client, table_data)
+    # модуль барабана
+    drum_half_turn_positive(client, table_data)
+    # модуль сканирования
+    scanning_module(client, table_data)
+    # модуль барабана
+    drum_half_turn_negative(client, table_data)
+    # получение кассеты
+    getting_cassette(client, table_data)
+
+
+def execute_commands_prepare_dev(client, table_data):
+    exec_by_name('illuminator_on', client, table_data)
+    exec_by_name('slave1_axis1_dir1', client, table_data)
+    exec_by_name('slave1_axis1_run', client, table_data)
+    exec_by_name('slave2_axis1_dir1', client, table_data)
+    exec_by_name('slave_2_run', client, table_data)
+    exec_by_name('interraptions1', client, table_data)
+    exec_by_name('drum_direction', client, table_data)
+    exec_by_name('drum_10_466', client, table_data)
+    exec_by_name('strictly_in_positive_way', client, table_data)
+    exec_by_name('drum_in_35_1', client, table_data)
+    # exec_by_name('drum_run_87_steps', client, table_data, emergency_stop_event)
+    # exec_by_name('drum_10_348', client, table_data, emergency_stop_event)
+    exec_by_name('interraptions2', client, table_data)
+    exec_by_name('focus_axis_dir1', client, table_data)
+    exec_by_name('focus_axis_run_down', client, table_data)
+    exec_by_name('focus_axis_back', client, table_data)
+    exec_by_name('focus_axis_run_full_back', client, table_data)
+
+
+def execute_commands_take_cassette(client, table_data):
+    exec_by_name('solenoid1_on', client, table_data)
+    exec_by_name('solenoid2_on', client, table_data)
+    exec_by_name('solenoid1_off', client, table_data)
+    exec_by_name('solenoid2_off', client, table_data)

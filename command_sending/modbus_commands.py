@@ -107,3 +107,5 @@ def calculate_crc(data):
 
 MODBUS_COMMANDS = [read_coils, read_discrete_inputs, read_holding_register,
                    read_input_registers, write_coils, write_register, write_multiply_registers]
+
+
