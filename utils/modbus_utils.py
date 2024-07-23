@@ -65,6 +65,6 @@ def time_sleep(client, delay):
         time.sleep(delay_devider)
         if emergency_stop_event.is_set():
             session['log'] += "\nEmergency stop activated. Execution stopped immediately.\n"
-            send_modbus_command(1, 6, 10, 0, client)
+            #  send_modbus_command(1, 6, 10, 0, client)
             send_modbus_command(2, 6, 10, 0, client)
             return redirect(url_for('index'))

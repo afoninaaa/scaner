@@ -7,7 +7,9 @@ from utils.modbus_utils import time_sleep
 from utils.state import state
 from collections import OrderedDict
 import os
+from threading import Event
 
+emergency_stop_event = Event()
 COMMAND_JSON_DIR = 'commands_json'  # Название папки с json файлами
 
 
@@ -23,7 +25,8 @@ def prepare_command():
     global prepared_commands, saved_commands
     device_addr, command_no, register, value = request_command()
 
-    session['form_data_com'] = {'deviceAddr': device_addr, 'commandNo': command_no, 'register': register, 'value': value}
+    session['form_data_com'] = {'deviceAddr': device_addr, 'commandNo': command_no,
+                                'register': register, 'value': value}
     if device_addr and command_no and register and value:
         try:
             message = [
@@ -108,14 +111,13 @@ def send_command():
                 value = prepared_command['value']
                 command_info = prepared_command['command_info']
                 time_start = time.time()
-                print("перед отправкой", state.client)
                 response = send_modbus_command(device_addr, command, register, value, state.client)
                 time_end = time.time()
                 time_stamp = time_end-time_start
                 session['log'] += f">>\n {command_info}\n<< Response: {response}\n << Time: {time_stamp}"
-                print(">> ", command_info, "\n<< Response: ", response, "\n << Time: ", time_stamp)
                 time_sleep(state.client, delay)
-
+                if emergency_stop_event.is_set():
+                    return
         except Exception as e:
             session['log'] = f"Failed to send command: {str(e)}"
     else:

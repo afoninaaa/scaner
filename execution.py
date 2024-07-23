@@ -10,7 +10,7 @@ def exec_by_name(func_name, client, table_data):
             command = command_data.get('commandNo')
             register = int(command_data.get('register'))
             value = int(command_data.get('value'))
-            delay = int(command_data.get('delay'))
+            delay = float(command_data.get('delay'))
             response, success = send_modbus_command(device_addr, command, register, value, client)
             session['log'] += f">> {func_name}\n<< Response: {response}\n"
             if not success:
@@ -79,23 +79,19 @@ def drum_module_half_steps(client, table_data):
     exec_by_name('solenoid3_on', client, table_data)
     exec_by_name('solenoid4_on', client, table_data)
     # барабан на полшага
-    # exec_by_name('drum_115_steps', client, table_data, emergency_stop_event)
-    # exec_by_name('drum_10_349', client, table_data, emergency_stop_event)
+    exec_by_name('drum_115_steps', client, table_data)
+    exec_by_name('drum_10_349', client, table_data)
     exec_by_name('drum_direction', client, table_data)
-    exec_by_name('drum_10_466', client, table_data)
-    exec_by_name('strictly_in_positive_way', client, table_data)
-    exec_by_name('drum_in_35_1', client, table_data)
     # соленоиды 3 и 4 выключить
     exec_by_name('solenoid3_off', client, table_data)
     exec_by_name('solenoid4_off', client, table_data)
+    # барабан до флага
+    exec_by_name('drum_10_466', client, table_data)
+    exec_by_name('strictly_in_positive_way', client, table_data)
+    exec_by_name('drum_in_35_1', client, table_data)
 
 
 def drum_half_turn_positive(client, table_data):
-    # барабан до датчика
-    # exec_by_name('drum_10_466', client, table_data, emergency_stop_event)
-    # exec_by_name('strictly_in_positive_way', client, table_data, emergency_stop_event)
-    # exec_by_name('drum_in_35_1', client, table_data, emergency_stop_event)
-    # exec_by_name('drum_run', client, table_data, emergency_stop_event)
     scanning_module_1part(client, table_data)
     # соленоиды 5 и 6 включить
     exec_by_name('solenoid5_on', client, table_data)
@@ -131,7 +127,7 @@ def scanning_module(client, table_data):
     # проверка на доезд кассеты до сканирования
     while True:
         response = exec_by_name('slave2_cassette_sensor', client, table_data)
-        if response[0] is True:  # Если первое значение в response True
+        if response[0] is True:
             exec_by_name('red_off', client, table_data)
             exec_by_name('green_on', client, table_data)
             break
@@ -139,35 +135,35 @@ def scanning_module(client, table_data):
             exec_by_name('green_off', client, table_data)
             exec_by_name('red_on', client, table_data)
     # ось сканирования наверх
-    exec_by_name('focus_axis_steps_up', client, table_data)
-    exec_by_name('focus_axis_run_up', client, table_data)
-    # ось сканирования вперед
-    exec_by_name('focus_axis_steps_straight', client, table_data)
-    exec_by_name('focus_axis_run_straight', client, table_data)
-    # ось сканирования назад
-    exec_by_name('focus_axis_steps_back', client, table_data)
-    exec_by_name('focus_axis_run_back', client, table_data)
-    # ось сканирования наверх
-    exec_by_name('focus_axis_steps_up', client, table_data)
-    exec_by_name('focus_axis_run_up', client, table_data)
-    # ось сканирования вперед
-    exec_by_name('focus_axis_steps_straight', client, table_data)
-    exec_by_name('focus_axis_run_straight', client, table_data)
-    # ось сканирования назад
-    exec_by_name('focus_axis_steps_back', client, table_data)
-    exec_by_name('focus_axis_run_back', client, table_data)
-    # ось сканирования наверх
-    exec_by_name('focus_axis_steps_up', client, table_data)
-    exec_by_name('focus_axis_run_up', client, table_data)
-    # ось сканирования вперед
-    exec_by_name('focus_axis_steps_straight', client, table_data)
-    exec_by_name('focus_axis_run_straight', client, table_data)
-    # ось сканирования назад
-    exec_by_name('focus_axis_steps_back', client, table_data)
-    exec_by_name('focus_axis_run_back', client, table_data)
+    for i in range(10):
+        for k in range(4):
+            exec_by_name('focus_axis_steps_up', client, table_data)
+            exec_by_name('focus_axis_run_up', client, table_data)
+            # тут захват изображения
+        exec_by_name('axis1_steps1', client, table_data)
+        exec_by_name('axis1_steps1_run1', client, table_data)
+        for x in range(4):
+            exec_by_name('focus_axis_steps_down', client, table_data)
+            exec_by_name('focus_axis_run_down', client, table_data)
+            # тут захват изображения
+        exec_by_name('axis1_steps1', client, table_data)
+        exec_by_name('axis1_steps1_run1', client, table_data)
+        for k in range(4):
+            exec_by_name('focus_axis_steps_up', client, table_data)
+            exec_by_name('focus_axis_run_up', client, table_data)
+            # тут захват изображения
+        exec_by_name('focus_axis_steps_up', client, table_data)
+        exec_by_name('focus_axis_run_up', client, table_data)
+        exec_by_name('axis1_steps1_back', client, table_data)
+        exec_by_name('axis1_steps1_run0', client, table_data)
     # ось сканирования до первого положения
     exec_by_name('focus_axis_dir1', client, table_data)
     exec_by_name('focus_axis_run_down', client, table_data)
+    # ось сканирования до первого положения
+    exec_by_name('focus_axis_dir1', client, table_data)
+    exec_by_name('focus_axis_run_down', client, table_data)
+    exec_by_name('slave2_axis1_dir1', client, table_data)
+    exec_by_name('slave_2_run', client, table_data)
     # выключить питание барабана
     exec_by_name('drum_power_off', client, table_data)
     # каретка до положения 2 (до барабана)
@@ -188,15 +184,17 @@ def scanning_module(client, table_data):
 
 
 def drum_half_turn_negative(client, table_data):
+    exec_by_name('drum_115_steps', client, table_data)
+    exec_by_name('drum_10_349', client, table_data)
+    # соленоиды 5 и 6 выключить
+    exec_by_name('solenoid5_off', client, table_data)
+    exec_by_name('solenoid6_off', client, table_data)
     # барабан до флага
     exec_by_name('drum_direction', client, table_data)
     exec_by_name('drum_10_466', client, table_data)
     exec_by_name('strictly_in_positive_way', client, table_data)
     exec_by_name('drum_in_35_1', client, table_data)
     exec_by_name('drum_run', client, table_data)
-    # соленоиды 5 и 6 выключить
-    exec_by_name('solenoid5_off', client, table_data)
-    exec_by_name('solenoid6_off', client, table_data)
     # каретка 2 до положения 1 (от барабана), каретка 1 до положения 2 (к барабану)
     scanning_module_2part(client, table_data)
     # соленоиды 3 и 4 включить
@@ -239,7 +237,6 @@ def getting_cassette(client, table_data):
 def execute_commands_run(client, table_data):
     if ((exec_by_name('slave1_sensor_dir2', client, table_data)[0] != 2)
             or (exec_by_name('slave2_sensor_dir2', client, table_data)[0] != 2)):
-
         raise ValueError("Axis are not in first direction, needed to prepare device")
     # модуль загрузки
     loading_module(client, table_data)

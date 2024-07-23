@@ -304,6 +304,19 @@
         "func_name": "slave1_axis1_dir1"
     },
     {
+        "comment1": "барабан",
+        "comment2": "115 шагов",
+        "delay": "0",
+        "color": "white",
+        "deviceAddr": "1",
+        "value": "115",
+        "register": "7",
+        "commandNo": "06",
+        "command": "01 06 07 64 39 9B",
+        "command_row": "7",
+        "func_name": "drum_115_steps"
+    },
+    {
         "comment1": "ось1",
         "comment2": "от барабана без кассеты",
         "delay": "0",
@@ -441,7 +454,7 @@
         "delay": "4",
         "color": "white",
         "deviceAddr": "2",
-        "value": "221",
+        "value": "477",
         "register": "5",
         "commandNo": "06",
         "command": "02 06 05 DD 58 80",
@@ -454,7 +467,7 @@
         "delay": "4",
         "color": "white",
         "deviceAddr": "1",
-        "value": "221",
+        "value": "477",
         "register": "5",
         "commandNo": "06",
         "command": "02 06 05 DD 58 80",
@@ -480,17 +493,30 @@
     "delay": "0",
     "color": "white",
     "deviceAddr": "2",
-    "value": "5000",
+    "value": "3000",
     "register": "12",
     "commandNo": "06",
     "command": "02 05 04 01 4D F8",
     "command_row": "32",
     "func_name": "focus_axis_steps_up"
 },
+    {
+    "comment1": "ось фокусировки",
+    "comment2": "вверх",
+    "delay": "0",
+    "color": "white",
+    "deviceAddr": "2",
+    "value": "15000",
+    "register": "12",
+    "commandNo": "06",
+    "command": "02 05 04 01 4D F8",
+    "command_row": "32",
+    "func_name": "focus_axis_steps_up_next"
+},
 {
     "comment1": "ось фокусировки",
     "comment2": "поехать",
-    "delay": "5",
+    "delay": "2",
     "color": "white",
     "deviceAddr": "2",
     "value": "93",
@@ -499,6 +525,19 @@
     "command": "02 05 04 01 4D F8",
     "command_row": "33",
     "func_name": "focus_axis_run_up"
+},
+    {
+    "comment1": "ось фокусировки",
+    "comment2": "вниз по шагам",
+    "delay": "0",
+    "color": "white",
+    "deviceAddr": "2",
+    "value": "3000",
+    "register": "12",
+    "commandNo": "06",
+    "command": "02 05 04 01 4D F8",
+    "command_row": "32",
+    "func_name": "focus_axis_steps_down"
 },
 {
     "comment1": "ось фокусировки",
@@ -597,7 +636,7 @@
     "delay": "0",
     "color": "white",
     "deviceAddr": "2",
-    "value": "221",
+    "value": "",
     "register": "15",
     "commandNo": "06",
     "command": "02 05 04 01 4D F8",
@@ -749,7 +788,58 @@
         "command": "01 06 09 01 98 08",
         "command_row": "4",
         "func_name": "red_off"
+    },
+     {
+        "comment1": "scaning axis1 steps1",
+        "comment2": "",
+        "delay": "0",
+        "color": "white",
+        "deviceAddr": "2",
+        "value": "500",
+        "register": "2",
+        "commandNo": "06",
+        "command": "01 06 09 01 98 08",
+        "command_row": "4",
+        "func_name": "axis1_steps1"
+    },
+    {
+        "comment1": "scaning axis1 steps1",
+        "comment2": "",
+        "delay": "0",
+        "color": "white",
+        "deviceAddr": "2",
+        "value": "1000",
+        "register": "2",
+        "commandNo": "06",
+        "command": "01 06 09 01 98 08",
+        "command_row": "4",
+        "func_name": "axis1_steps1_back"
     }
-
+    ,
+     {
+        "comment1": "scaning axis1 steps1",
+        "comment2": "",
+        "delay": "3",
+        "color": "white",
+        "deviceAddr": "2",
+        "value": "345",
+        "register": "5",
+        "commandNo": "06",
+        "command": "01 06 09 01 98 08",
+        "command_row": "4",
+        "func_name": "axis1_steps1_run1"
+    }, {
+        "comment1": "scaning axis1 steps1",
+        "comment2": "",
+        "delay": "2",
+        "color": "white",
+        "deviceAddr": "2",
+        "value": "344",
+        "register": "5",
+        "commandNo": "06",
+        "command": "01 06 09 01 98 08",
+        "command_row": "4",
+        "func_name": "axis1_steps1_run0"
+    }
 ]
 
