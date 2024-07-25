@@ -41,4 +41,4 @@ def run_code():
         output = str(e)
         log_message = f"Output: {output}"
         session['log'] += log_message
-    return redirect(url_for('index'))
+    return jsonify()
